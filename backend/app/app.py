@@ -1,10 +1,14 @@
 from flask import Flask, jsonify
 from flask_swagger_ui import get_swaggerui_blueprint
+from flask_cors import CORS
+import os
+
 
 # URL for exposing Swagger UI (without trailing '/')
 SWAGGER_URL = '/api/docs'
 # This must point to a valid OpenAPI/Swagger JSON definition
 API_URL = '/swagger.json'
+
 
 blueprint = get_swaggerui_blueprint(
     SWAGGER_URL,  # Swagger UI static files will be mapped to '{SWAGGER_URL}/dist/'
@@ -25,6 +29,29 @@ blueprint = get_swaggerui_blueprint(
 
 def create_app():
     app = Flask(__name__)
+
+    # Configure CORS for API endpoints and Swagger
+    # Support multiple origins via FRONTEND_ORIGINS env (comma-separated) or fallback to localhost defaults
+    origins_env = os.getenv("FRONTEND_ORIGINS") or os.getenv("FRONTEND_ORIGIN")
+    if origins_env:
+        origins = [o.strip() for o in origins_env.split(",") if o.strip()]
+    else:
+        # Allow typical local development origins on any port (http/https)
+        origins = [
+            r"http://localhost:\d+",
+            r"http://127.0.0.1:\d+",
+            r"https://localhost:\d+",
+            r"https://127.0.0.1:\d+",
+        ]
+
+    CORS(
+        app,
+        resources={r"/*": {"origins": origins}},
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+        expose_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    )
 
     @app.route('/')
     def hello():
@@ -62,6 +89,8 @@ def create_app():
                 }
             }
         }
+
+
         return jsonify(spec)
 
     app.register_blueprint(blueprint)
