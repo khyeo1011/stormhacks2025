@@ -1,9 +1,7 @@
+
 import os
 from flask import Flask, jsonify, g, request
 from flask_swagger_ui import get_swaggerui_blueprint
-from flask_cors import CORS
-import os
-
 import psycopg2
 from werkzeug.security import generate_password_hash
 
@@ -11,7 +9,6 @@ from werkzeug.security import generate_password_hash
 SWAGGER_URL = '/api/docs'
 # This must point to a valid OpenAPI/Swagger JSON definition
 API_URL = '/swagger.json'
-
 
 blueprint = get_swaggerui_blueprint(
     SWAGGER_URL,  # Swagger UI static files will be mapped to '{SWAGGER_URL}/dist/'
@@ -48,7 +45,7 @@ def create_app():
     def get_users():
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute('SELECT id, email, firstName, lastName, cumulativeScore FROM users;')
+        cur.execute('SELECT id, email, nickname, cumulativeScore FROM users;')
         users = cur.fetchall()
         cur.close()
         return jsonify(users)
@@ -58,8 +55,7 @@ def create_app():
         data = request.get_json()
         email = data['email']
         password = data['password']
-        firstName = data.get('firstName')
-        lastName = data.get('lastName')
+        nickname = data.get('nickname')
         cumulativeScore = data.get('cumulativeScore', 0)
 
         hashed_password = generate_password_hash(password)
@@ -68,8 +64,8 @@ def create_app():
         cur = conn.cursor()
         try:
             cur.execute(
-                'INSERT INTO users (email, password, firstName, lastName, cumulativeScore) VALUES (%s, %s, %s, %s, %s) RETURNING id',
-                (email, hashed_password, firstName, lastName, cumulativeScore)
+                'INSERT INTO Users (email, password, nickname, cumulativeScore) VALUES (%s, %s, %s, %s) RETURNING id',
+                (email, hashed_password, nickname, cumulativeScore)
             )
             user_id = cur.fetchone()[0]
             conn.commit()
@@ -86,9 +82,9 @@ def create_app():
         spec = {
             "openapi": "3.0.3",
             "info": {
-                "title": "Test application",
+                "title": "Buss-in-it API",
                 "version": "1.0.0",
-                "description": "Minimal OpenAPI spec for the Flask app"
+                "description": "API for the Buss-in-it web game."
             },
             "servers": [
                 {"url": "http://localhost:8000"}
@@ -125,8 +121,7 @@ def create_app():
                                                 "properties": {
                                                     "id": {"type": "integer"},
                                                     "email": {"type": "string"},
-                                                    "firstName": {"type": "string"},
-                                                    "lastName": {"type": "string"},
+                                                    "nickname": {"type": "string"},
                                                     "cumulativeScore": {"type": "integer"}
                                                 }
                                             }
@@ -147,8 +142,7 @@ def create_app():
                                         "properties": {
                                             "email": {"type": "string"},
                                             "password": {"type": "string"},
-                                            "firstName": {"type": "string"},
-                                            "lastName": {"type": "string"},
+                                            "nickname": {"type": "string"},
                                             "cumulativeScore": {"type": "integer"}
                                         },
                                         "required": ["email", "password"]

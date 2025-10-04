@@ -9,7 +9,7 @@ CREATE TABLE Users (
 CREATE TABLE Prediction (
     predictionID SERIAL PRIMARY KEY,
     tripID INT,
-    userID SERIAL,
+    userID INT,
     late BOOLEAN,
     FOREIGN KEY (userID) REFERENCES Users(id)
 );
