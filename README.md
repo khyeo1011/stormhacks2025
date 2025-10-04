@@ -1,4 +1,4 @@
-# Project Title
+# stormhacks2025
 
 This project is a web application with a React frontend, a Flask backend, and a PostgreSQL database.
 
