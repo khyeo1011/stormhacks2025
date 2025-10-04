@@ -1,13 +1,15 @@
 CREATE TABLE Users (
     id SERIAL PRIMARY KEY,
-    email VARCHAR(256) UNIQUE,
+    email VARCHAR(256) UNIQUE NOT NULL,
+    password VARCHAR(256) NOT NULL,
+    Nickname VARCHAR(256),
     cumulativeScore INT
 );
 
 CREATE TABLE Prediction (
     predictionID SERIAL PRIMARY KEY,
     tripID INT,
-    userID INT,
+    userID SERIAL,
     late BOOLEAN,
     FOREIGN KEY (userID) REFERENCES Users(id)
 );
