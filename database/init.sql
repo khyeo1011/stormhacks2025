@@ -1,4 +1,22 @@
-CREATE TABLE example (
+CREATE TABLE Users (
     id SERIAL PRIMARY KEY,
-    data VARCHAR(255)
+    email VARCHAR(256) UNIQUE,
+    cumulativeScore INT
+);
+
+CREATE TABLE Prediction (
+    predictionID SERIAL PRIMARY KEY,
+    tripID INT,
+    userID INT,
+    late BOOLEAN,
+    FOREIGN KEY (userID) REFERENCES Users(id)
+);
+
+CREATE TABLE Friends (
+    userID1 INT,
+    userID2 INT,
+    PRIMARY KEY (userID1, userID2),
+    FOREIGN KEY (userID1) REFERENCES Users(id),
+    FOREIGN KEY (userID2) REFERENCES Users(id),
+    CHECK (userID1 <> userID2)
 );

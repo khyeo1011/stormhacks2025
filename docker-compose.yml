@@ -18,9 +18,11 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - '5000:5000'
+      - '8000:8000'
     volumes:
       - ./backend:/app
+    environment:
+      - FRONTEND_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,https://localhost:3000,https://127.0.0.1:3000
     depends_on:
       - db
 
