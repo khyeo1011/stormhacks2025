@@ -61,6 +61,17 @@
   background-color: rgb(216, 169, 169);
   color: white;
 }
+#simple-container {
+display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 6.2em;
+  border-radius: .4em;
+  padding: 10px 20px;
+  border: 2px solid black;
+  box-shadow:  -3px -1px 20px 6px rgb(163, 138, 138);
+  background-color: rgba(156, 42, 42, 0.618);
+  color: white;}
 ul {
   list-style-type: none;
   margin: 0;
