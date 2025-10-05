@@ -11,6 +11,7 @@ services:
       - /app/node_modules
 
   backend:
+    
     build:
       context: ./backend
       dockerfile: Dockerfile
