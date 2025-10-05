@@ -99,58 +99,62 @@ def add_user():
 
 
 
-@auth_bp.route('/login', methods=['POST'])
+@auth_bp.route('/login', methods=['POST', "OPTIONS"])
+@cross_origin()
 def login():
-    email = request.json.get('email', None)
-    password = request.json.get('password', None)
+    if request.method == 'POST':
+        email = request.json.get('email', None)
+        password = request.json.get('password', None)
 
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('SELECT "id", "password" FROM "users" WHERE "email" = %s;', (email,))
-    user = cur.fetchone()
-    cur.close()
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('SELECT "id", "password" FROM "users" WHERE "email" = %s;', (email,))
+        user = cur.fetchone()
+        cur.close()
 
-    if user and check_password_hash(user[1], password):
-        user_id = user[0]
-        access_token = create_access_token(identity=str(user_id))
-        return jsonify(access_token=access_token)
+        if user and check_password_hash(user[1], password):
+            user_id = user[0]
+            access_token = create_access_token(identity=str(user_id))
+            return jsonify(access_token=access_token)
 
-    return jsonify({"msg": "Bad email or password"}), 401
+        return jsonify({"msg": "Bad email or password"}), 401
 
-@auth_bp.route('/friend-requests', methods=['POST'])
+@auth_bp.route('/friend-requests', methods=['POST', "OPTIONS"])
+@cross_origin()
 @jwt_required()
 def send_friend_request():
-    senderId = get_jwt_identity()
-    receiverId = request.json.get('receiverId')
+    if request.method == 'POST':
+        senderId = get_jwt_identity()
+        receiverId = request.json.get('receiverId')
 
-    if not receiverId:
-        return jsonify({"error": "receiverId is required"}), 400
-    if senderId == receiverId:
-        return jsonify({"error": "Cannot send a friend request to yourself"}), 400
+        if not receiverId:
+            return jsonify({"error": "receiverId is required"}), 400
+        if senderId == receiverId:
+            return jsonify({"error": "Cannot send a friend request to yourself"}), 400
 
-    conn = get_db_connection()
-    cur = conn.cursor()
-    try:
-        # Check if a request already exists or if they are already friends
-        cur.execute('SELECT 1 FROM "friendRequests" WHERE ("senderId" = %s AND "receiverId" = %s) OR ("senderId" = %s AND "receiverId" = %s)', (senderId, receiverId, receiverId, senderId))
-        if cur.fetchone():
-            return jsonify({"error": "Friend request already sent or received"}), 409
-        
-        cur.execute('SELECT 1 FROM "friends" WHERE "userId" = %s AND "friendId" = %s', (senderId, receiverId))
-        if cur.fetchone():
-            return jsonify({"error": "Users are already friends"}), 409
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            # Check if a request already exists or if they are already friends
+            cur.execute('SELECT 1 FROM "friendRequests" WHERE ("senderId" = %s AND "receiverId" = %s) OR ("senderId" = %s AND "receiverId" = %s)', (senderId, receiverId, receiverId, senderId))
+            if cur.fetchone():
+                return jsonify({"error": "Friend request already sent or received"}), 409
+            
+            cur.execute('SELECT 1 FROM "friends" WHERE "userId" = %s AND "friendId" = %s', (senderId, receiverId))
+            if cur.fetchone():
+                return jsonify({"error": "Users are already friends"}), 409
 
-        cur.execute(
-            'INSERT INTO "friendRequests" ("senderId", "receiverId", "status") VALUES (%s, %s, %s)',
-            (senderId, receiverId, 'pending')
-        )
-        conn.commit()
-        cur.close()
-        return jsonify({"msg": "Friend request sent"}), 201
-    except psycopg2.Error as e:
-        conn.rollback()
-        cur.close()
-        return jsonify({"error": str(e)}), 500
+            cur.execute(
+                'INSERT INTO "friendRequests" ("senderId", "receiverId", "status") VALUES (%s, %s, %s)',
+                (senderId, receiverId, 'pending')
+            )
+            conn.commit()
+            cur.close()
+            return jsonify({"msg": "Friend request sent"}), 201
+        except psycopg2.Error as e:
+            conn.rollback()
+            cur.close()
+            return jsonify({"error": str(e)}), 500
 
 @auth_bp.route('/friend-requests/pending', methods=['GET'])
 @jwt_required()
@@ -163,37 +167,38 @@ def get_pending_requests():
     cur.close()
     return jsonify(requests)
 
-@auth_bp.route('/friend-requests/handle', methods=['POST'])
+@auth_bp.route('/friend-requests/handle', methods=['POST', "OPTIONS"])
 @jwt_required()
 def handle_friend_request():
-    receiverId = get_jwt_identity()
-    senderId = request.json.get('senderId')
-    action = request.json.get('action') # 'accept' or 'reject'
+    if request.method == 'POST':
+        receiverId = get_jwt_identity()
+        senderId = request.json.get('senderId')
+        action = request.json.get('action') # 'accept' or 'reject'
 
-    if not all([senderId, action in ['accept', 'reject']]):
-        return jsonify({"error": "senderId and a valid action ('accept' or 'reject') are required"}), 400
+        if not all([senderId, action in ['accept', 'reject']]):
+            return jsonify({"error": "senderId and a valid action ('accept' or 'reject') are required"}), 400
 
-    conn = get_db_connection()
-    cur = conn.cursor()
-    try:
-        # Delete the request regardless of action
-        cur.execute('DELETE FROM "friendRequests" WHERE "senderId" = %s AND "receiverId" = %s RETURNING "status"', (senderId, receiverId))
-        request_exists = cur.fetchone()
-        if not request_exists:
-            return jsonify({"error": "Friend request not found"}), 404
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            # Delete the request regardless of action
+            cur.execute('DELETE FROM "friendRequests" WHERE "senderId" = %s AND "receiverId" = %s RETURNING "status"', (senderId, receiverId))
+            request_exists = cur.fetchone()
+            if not request_exists:
+                return jsonify({"error": "Friend request not found"}), 404
 
-        if action == 'accept':
-            # Add friendship in both directions
-            cur.execute('INSERT INTO "friends" ("userId", "friendId") VALUES (%s, %s)', (receiverId, senderId))
-            cur.execute('INSERT INTO "friends" ("userId", "friendId") VALUES (%s, %s)', (senderId, receiverId))
-        
-        conn.commit()
-        cur.close()
-        return jsonify({"msg": f"Friend request {action}ed"}), 200
-    except psycopg2.Error as e:
-        conn.rollback()
-        cur.close()
-        return jsonify({"error": str(e)}), 500
+            if action == 'accept':
+                # Add friendship in both directions
+                cur.execute('INSERT INTO "friends" ("userId", "friendId") VALUES (%s, %s)', (receiverId, senderId))
+                cur.execute('INSERT INTO "friends" ("userId", "friendId") VALUES (%s, %s)', (senderId, receiverId))
+            
+            conn.commit()
+            cur.close()
+            return jsonify({"msg": f"Friend request {action}ed"}), 200
+        except psycopg2.Error as e:
+            conn.rollback()
+            cur.close()
+            return jsonify({"error": str(e)}), 500
 
 @auth_bp.route('/friends', methods=['GET'])
 @jwt_required()
