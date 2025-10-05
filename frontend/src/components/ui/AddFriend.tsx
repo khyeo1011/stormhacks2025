@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { makeAuthenticatedRequest } from '../../utils/auth';
+import { API_ENDPOINTS } from '../../config/api';
 import './AddFriend.css';
 
 interface User {
@@ -34,7 +35,7 @@ const AddFriend: React.FC = () => {
 
   const loadPendingRequests = async () => {
     try {
-      const response = await makeAuthenticatedRequest('http://localhost:8000/auth/friend-requests/pending');
+      const response = await makeAuthenticatedRequest(API_ENDPOINTS.AUTH.FRIEND_REQUESTS_PENDING);
       if (response.ok) {
         const requests = await response.json();
         setPendingRequests(requests);
@@ -55,7 +56,7 @@ const AddFriend: React.FC = () => {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:8000/auth/users');
+      const response = await fetch(API_ENDPOINTS.AUTH.USERS);
       if (response.ok) {
         const allUsers = await response.json();
         // Filter users based on search term (nickname or email)
@@ -79,7 +80,7 @@ const AddFriend: React.FC = () => {
       setError('');
       setSuccess('');
       
-      const response = await makeAuthenticatedRequest('http://localhost:8000/auth/friend-requests', {
+      const response = await makeAuthenticatedRequest(API_ENDPOINTS.AUTH.FRIEND_REQUESTS, {
         method: 'POST',
         body: JSON.stringify({
           receiver_id: receiverId
@@ -104,7 +105,7 @@ const AddFriend: React.FC = () => {
       setError('');
       setSuccess('');
 
-      const response = await makeAuthenticatedRequest('http://localhost:8000/auth/friend-requests/handle', {
+      const response = await makeAuthenticatedRequest(API_ENDPOINTS.AUTH.FRIEND_REQUESTS_HANDLE, {
         method: 'POST',
         body: JSON.stringify({
           sender_id: senderId,

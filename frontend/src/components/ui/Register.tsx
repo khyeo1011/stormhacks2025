@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_ENDPOINTS } from '../../config/api';
 import './Register.css';
 
 const Register: React.FC = () => {
@@ -48,7 +49,7 @@ const Register: React.FC = () => {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:8000/auth/register', {
+      const response = await fetch(API_ENDPOINTS.AUTH.REGISTER, {
         method: 'POST',
         mode: "cors",
         headers: {

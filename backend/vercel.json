@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "wsgi.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/wsgi.py"
+    }
+  ],
+  "env": {
+    "JWT_SECRET_KEY": "@jwt-secret-key",
+    "POSTGRES_HOST": "@postgres-host",
+    "POSTGRES_USER": "@postgres-user",
+    "POSTGRES_PASSWORD": "@postgres-password",
+    "POSTGRES_DB": "@postgres-db",
+    "FRONTEND_ORIGINS": "@frontend-origins"
+  }
+}

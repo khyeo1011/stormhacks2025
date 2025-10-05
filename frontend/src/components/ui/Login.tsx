@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { API_ENDPOINTS } from '../../config/api';
 import './Login.css';
 
 const Login: React.FC = () => {
@@ -28,7 +29,7 @@ const Login: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/auth/login', {
+      const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
