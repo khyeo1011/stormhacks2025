@@ -8,7 +8,7 @@ interface UserData {
   id: number;
   email: string;
   nickname: string;
-  cumulativeScore: number;
+  cumulative_score: number;
   createdAt: string;
 }
 
@@ -78,7 +78,6 @@ const Dashboard: React.FC = () => {
         const userData = await userResponse.json();
         setUserData(userData);
       }
-
       if (tripsResponse.ok) {
         const tripsData = await tripsResponse.json();
         // Filter trips that haven't started yet
@@ -268,7 +267,7 @@ const Dashboard: React.FC = () => {
           <div className="stat-card primary">
             <div className="stat-icon">🎯</div>
             <div className="stat-content">
-              <div className="stat-value">{userData?.cumulativeScore || 0}</div>
+              <div className="stat-value">{userData?.cumulative_score || 0}</div>
               <div className="stat-label">Total Score</div>
             </div>
           </div>
