@@ -1,4 +1,3 @@
-
 import os
 import pandas as pd
 from flask import Blueprint, jsonify
@@ -13,10 +12,11 @@ stops_df = pd.DataFrame()
 routes_df = pd.DataFrame()
 calendar_df = pd.DataFrame()
 stop_times_df = pd.DataFrame()
+trips_with_stops_df = pd.DataFrame()
 
 def load_data_from_db():
     """Loads all necessary data from the database into global pandas DataFrames."""
-    global trips_df, stops_df, routes_df, calendar_df, stop_times_df
+    global trips_df, stops_df, routes_df, calendar_df, stop_times_df, trips_with_stops_df
 
     db_user = os.environ.get("POSTGRES_USER")
     db_password = os.environ.get("POSTGRES_PASSWORD")
@@ -35,30 +35,30 @@ def load_data_from_db():
 
         print("Successfully loaded data from the database.")
 
+        # Pre-calculate the trips with stops dataframe
+        first_stops = stop_times_df.loc[stop_times_df.groupby('trip_id')['stop_sequence'].idxmin()]
+        last_stops = stop_times_df.loc[stop_times_df.groupby('trip_id')['stop_sequence'].idxmax()]
+
+        first_stops = pd.merge(first_stops, stops_df, on='stop_id', how='left')
+        last_stops = pd.merge(last_stops, stops_df, on='stop_id', how='left')
+
+        trips_with_stops = pd.merge(trips_df, first_stops[['trip_id', 'stop_name']], on='trip_id', how='left')
+        trips_with_stops.rename(columns={'stop_name': 'first_stop'}, inplace=True)
+        trips_with_stops_df = pd.merge(trips_with_stops, last_stops[['trip_id', 'stop_name']], on='trip_id', how='left')
+        trips_with_stops_df.rename(columns={'stop_name': 'last_stop'}, inplace=True)
+
+        print("Successfully pre-calculated trips with stops.")
+
     except Exception as e:
         print(f"Error loading data from database: {e}")
 
 @trips_bp.route('', methods=['GET'])
 def get_trips():
     """Returns a list of trips with their first and last stops."""
-    if trips_df.empty or stop_times_df.empty or stops_df.empty:
+    if trips_with_stops_df.empty:
         return jsonify({"error": "Data not loaded"}), 500
 
-    # Get the first and last stop for each trip
-    first_stops = stop_times_df.loc[stop_times_df.groupby('trip_id')['stop_sequence'].idxmin()]
-    last_stops = stop_times_df.loc[stop_times_df.groupby('trip_id')['stop_sequence'].idxmax()]
-
-    # Merge with stops to get stop names
-    first_stops = pd.merge(first_stops, stops_df, on='stop_id', how='left')
-    last_stops = pd.merge(last_stops, stops_df, on='stop_id', how='left')
-
-    # Merge with trips
-    trips_with_stops = pd.merge(trips_df, first_stops[['trip_id', 'stop_name']], on='trip_id', how='left')
-    trips_with_stops.rename(columns={'stop_name': 'first_stop'}, inplace=True)
-    trips_with_stops = pd.merge(trips_with_stops, last_stops[['trip_id', 'stop_name']], on='trip_id', how='left')
-    trips_with_stops.rename(columns={'stop_name': 'last_stop'}, inplace=True)
-
-    return jsonify(trips_with_stops.to_dict(orient='records'))
+    return jsonify(trips_with_stops_df.to_dict(orient='records'))
 
 @trips_bp.route('/<string:trip_id>', methods=['GET'])
 def get_trip(trip_id):
