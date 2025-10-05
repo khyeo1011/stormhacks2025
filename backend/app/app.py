@@ -43,7 +43,6 @@ def create_app():
         return "Hello from Flask!"
 
 
-
     # Minimal OpenAPI 3.0 spec so Swagger UI can render
     @app.get('/swagger.json')
     def swagger_spec():
