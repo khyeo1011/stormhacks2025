@@ -28,7 +28,7 @@ def get_users():
     return jsonify(users)
 
 
-@auth_bp.route('/users', methods=['POST'])
+@auth_bp.route('/register', methods=['POST'])
 def add_user():
     data = request.get_json()
     email = data['email']
@@ -54,6 +54,25 @@ def add_user():
         cur.close()
         return jsonify({'error': 'email already exists'}), 409
 
+
+
+@auth_bp.route('/login', methods=['POST'])
+def login():
+    email = request.json.get('email', None)
+    password = request.json.get('password', None)
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT id, password FROM users WHERE email = %s;', (email,))
+    user = cur.fetchone()
+    cur.close()
+
+    if user and check_password_hash(user[1], password):
+        user_id = user[0]
+        access_token = create_access_token(identity=user_id)
+        return jsonify(access_token=access_token)
+
+    return jsonify({"msg": "Bad email or password"}), 401
 
 @auth_bp.route('/friend-requests', methods=['POST'])
 @jwt_required()
