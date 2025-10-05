@@ -1,14 +1,16 @@
-from flask import Flask, jsonify
-from flask_swagger_ui import get_swaggerui_blueprint
-from flask_cors import CORS
-import os
 
+import os
+from flask import Flask, jsonify, g, request
+from flask_swagger_ui import get_swaggerui_blueprint
+import psycopg2
+from werkzeug.security import generate_password_hash
+
+from .auth.routes import  auth_bp
 
 # URL for exposing Swagger UI (without trailing '/')
 SWAGGER_URL = '/api/docs'
 # This must point to a valid OpenAPI/Swagger JSON definition
 API_URL = '/swagger.json'
-
 
 blueprint = get_swaggerui_blueprint(
     SWAGGER_URL,  # Swagger UI static files will be mapped to '{SWAGGER_URL}/dist/'
@@ -16,46 +18,32 @@ blueprint = get_swaggerui_blueprint(
     config={  # Swagger UI config overrides
         'app_name': "Test application"
     },
-    # oauth_config={  # OAuth config. See https://github.com/swagger-api/swagger-ui#oauth2-configuration .
-    #    'clientId': "your-client-id",
-    #    'clientSecret': "your-client-secret-if-required",
-    #    'realm': "your-realms",
-    #    'appName': "your-app-name",
-    #    'scopeSeparator': " ",
-    #    'additionalQueryStringParams': {'test': "hello"}
-    # }
 )
 
+def get_db_connection():
+    if 'db' not in g:
+        g.db = psycopg2.connect(
+            host=os.environ.get('POSTGRES_HOST'),
+            database=os.environ.get('POSTGRES_DB'),
+            user=os.environ.get('POSTGRES_USER'),
+            password=os.environ.get('POSTGRES_PASSWORD')
+        )
+    return g.db
 
 def create_app():
     app = Flask(__name__)
 
-    # Configure CORS for API endpoints and Swagger
-    # Support multiple origins via FRONTEND_ORIGINS env (comma-separated) or fallback to localhost defaults
-    origins_env = os.getenv("FRONTEND_ORIGINS") or os.getenv("FRONTEND_ORIGIN")
-    if origins_env:
-        origins = [o.strip() for o in origins_env.split(",") if o.strip()]
-    else:
-        # Allow typical local development origins on any port (http/https)
-        origins = [
-            r"http://localhost:\d+",
-            r"http://127.0.0.1:\d+",
-            r"https://localhost:\d+",
-            r"https://127.0.0.1:\d+",
-        ]
-
-    CORS(
-        app,
-        resources={r"/*": {"origins": origins}},
-        supports_credentials=True,
-        allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
-        expose_headers=["Content-Type", "Authorization"],
-        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    )
+    @app.teardown_appcontext
+    def close_db(e=None):
+        db = g.pop('db', None)
+        if db is not None:
+            db.close()
 
     @app.route('/')
     def hello():
         return "Hello from Flask!"
+
+
 
     # Minimal OpenAPI 3.0 spec so Swagger UI can render
     @app.get('/swagger.json')
@@ -63,9 +51,9 @@ def create_app():
         spec = {
             "openapi": "3.0.3",
             "info": {
-                "title": "Test application",
+                "title": "Buss-in-it API",
                 "version": "1.0.0",
-                "description": "Minimal OpenAPI spec for the Flask app"
+                "description": "API for the Buss-in-it web game."
             },
             "servers": [
                 {"url": "http://localhost:8000"}
@@ -86,18 +74,79 @@ def create_app():
                             }
                         }
                     }
+                },
+                "/users": {
+                    "get": {
+                        "summary": "Get all users",
+                        "responses": {
+                            "200": {
+                                "description": "A list of users",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {"type": "integer"},
+                                                    "email": {"type": "string"},
+                                                    "nickname": {"type": "string"},
+                                                    "cumulativeScore": {"type": "integer"}
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "post": {
+                        "summary": "Create a new user",
+                        "requestBody": {
+                            "required": True,
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "email": {"type": "string"},
+                                            "password": {"type": "string"},
+                                            "nickname": {"type": "string"},
+                                            "cumulativeScore": {"type": "integer"}
+                                        },
+                                        "required": ["email", "password"]
+                                    }
+                                }
+                            }
+                        },
+                        "responses": {
+                            "201": {
+                                "description": "User created",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {"type": "integer"}
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "409": {
+                                "description": "Email already exists"
+                            }
+                        }
+                    }
                 }
             }
         }
-
-
         return jsonify(spec)
 
     app.register_blueprint(blueprint)
+    app.register_blueprint(auth_bp)
 
     return app
-
-
 
 if __name__ == '__main__':
     app = create_app()
