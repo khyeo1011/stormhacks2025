@@ -67,7 +67,8 @@ CREATE TABLE users (
     nickname VARCHAR(80) UNIQUE NOT NULL,
     email VARCHAR(120) UNIQUE NOT NULL,
     password_hash VARCHAR(256) NOT NULL,
-    cumulative_score INTEGER DEFAULT 0
+    cumulative_score INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE friend_requests (
