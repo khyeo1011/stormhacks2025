@@ -31,13 +31,17 @@ const Hero: React.FC = () => {
                   <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </Link>
-              
+              <Link to="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener noreferrer">
               <button className="btn-secondary-large">
+          
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
+                
+                
                 <span>Watch Demo</span>
               </button>
+              </Link>
             </div>
             
             <div className="hero-stats">

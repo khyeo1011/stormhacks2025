@@ -91,7 +91,6 @@ const Header: React.FC = () => {
           <li><button onClick={() => handleNavClick('features')} className="mobile-nav-link">Features</button></li>
           <li><button onClick={() => handleNavClick('about')} className="mobile-nav-link">About</button></li>
           <li><button onClick={() => handleNavClick('contact')} className="mobile-nav-link">Contact</button></li>
-          <li><Link to="/leaderboard" className="mobile-nav-link" onClick={toggleMenu}>Leaderboard</Link></li>
           {isAuthenticated ? (
             <>
               <li><Link to="/dashboard" className="mobile-nav-link" onClick={toggleMenu}>Dashboard</Link></li>
