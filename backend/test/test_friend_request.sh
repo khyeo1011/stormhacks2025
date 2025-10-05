@@ -21,12 +21,12 @@ echo "--- Starting Friend Request Test ---"
 echo "1. Creating users Alice and Bob..."
 USER_A_RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" \
   -d '{"email": "'$EMAIL_A'", "password": "'$PASSWORD_A'", "nickname": "'$NICKNAME_A'"}' \
-  $BASE_URL/auth/users)
+  $BASE_URL/auth/register)
 USER_ID_A=$(echo $USER_A_RESPONSE | jq -r .id)
 
 USER_B_RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" \
   -d '{"email": "'$EMAIL_B'", "password": "'$PASSWORD_B'", "nickname": "'$NICKNAME_B'"}' \
-  $BASE_URL/auth/users)
+  $BASE_URL/auth/register)
 USER_ID_B=$(echo $USER_B_RESPONSE | jq -r .id)
 
 echo "   - Alice created with ID: $USER_ID_A"

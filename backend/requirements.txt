@@ -4,3 +4,6 @@ flask-swagger-ui
 flask-cors
 flask-jwt-extended
 Pillow
+requests
+gtfs-realtime-bindings
+pandas
