@@ -71,6 +71,8 @@ def load_data_from_db():
         stop_times_df['service_date'] = pd.to_datetime(stop_times_df['service_date']).dt.date
 
         print("Successfully loaded data from the database.")
+        print(f"trips_df columns before filter: {trips_df.columns.tolist()}")
+        print(f"trips_df shape before filter: {trips_df.shape}")
 
         # --- Filter trips for a relevant date range ---
         today = datetime.now().date()
@@ -83,6 +85,9 @@ def load_data_from_db():
         
         stop_times_df = pd.merge(stop_times_df, valid_trip_ids_dates, on=['trip_id', 'service_date'], how='inner')
         # --- End Filter trips ---
+
+        print(f"trips_df columns after filter: {trips_df.columns.tolist()}")
+        print(f"trips_df shape after filter: {trips_df.shape}")
 
         # Pre-calculate the trips with stops dataframe
         # Group by both trip_id and service_date
@@ -109,8 +114,14 @@ def get_trips():
     if trips_with_stops_df.empty:
         return jsonify({"error": "Data not loaded"}), 500
 
-    # Convert service_date to string for JSON serialization
+    # Convert arrival times to timedelta for sorting
     trips_output = trips_with_stops_df.copy()
+    trips_output['first_stop_arrival_timedelta'] = trips_output['first_stop_arrival_time'].apply(lambda x: sum(int(i) * 60 ** idx for idx, i in enumerate(reversed(x.split(':')))) if pd.notna(x) else pd.NaT)
+    
+    # Sort by first_stop_arrival_timedelta
+    trips_output = trips_output.sort_values(by='first_stop_arrival_timedelta').drop(columns=['first_stop_arrival_timedelta'])
+
+    # Convert service_date to string for JSON serialization
     trips_output['service_date'] = trips_output['service_date'].astype(str)
     return jsonify(trips_output.to_dict(orient='records'))
 
