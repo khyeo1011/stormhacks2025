@@ -4,6 +4,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 import psycopg2
 import psycopg2.extras
 from datetime import datetime
+from flask_cors import cross_origin
 
 # Create a new blueprint for simplified predictions
 simple_predictions_bp = Blueprint('simple_predictions', __name__, url_prefix='/simple-predictions')
@@ -24,6 +25,7 @@ def get_db_connection():
 
 @simple_predictions_bp.route('', methods=['POST'])
 @jwt_required()
+@cross_origin()
 def create_simple_prediction():
     data = request.get_json()
     trip_id = data.get('trip_id')
@@ -87,6 +89,7 @@ def create_simple_prediction():
 
 @simple_predictions_bp.route('', methods=['GET'])
 @jwt_required()
+@cross_origin()
 def get_simple_predictions():
     user_id = get_jwt_identity()
     conn = get_db_connection()
@@ -110,6 +113,7 @@ def get_simple_predictions():
 
 @simple_predictions_bp.route('/stats', methods=['GET'])
 @jwt_required()
+@cross_origin()
 def get_prediction_stats():
     user_id = get_jwt_identity()
     conn = get_db_connection()
