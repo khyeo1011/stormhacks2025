@@ -2,15 +2,57 @@
   "swagger": "2.0",
   "info": {
     "title": "Stormhacks 2025 Prediction API",
-    "description": "API for a bus arrival prediction game.",
+    "description": "API for a bus arrival prediction game with social features.",
     "version": "1.0.0"
   },
   "host": "localhost:8000",
-  "basePath": "/",
   "schemes": [
     "http"
   ],
   "paths": {
+    "/leaderboard": {
+      "get": {
+        "summary": "Get leaderboard",
+        "description": "Returns the top 10 users by cumulative score.",
+        "responses": {
+          "200": {
+            "description": "A list of users on the leaderboard",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LeaderboardUser"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/routes/{route_id}/trips": {
+      "get": {
+        "summary": "Get trips for a specific route",
+        "description": "Returns a list of trips for a given route, including first and last stop times.",
+        "parameters": [
+          {
+            "name": "route_id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "The ID of the route to retrieve trips for."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of trips for the route",
+            "schema": {
+              "$ref": "#/definitions/RouteTrips"
+            }
+          },
+          "404": {
+            "description": "Route not found"
+          }
+        }
+      }
+    },
     "/auth/register": {
       "post": {
         "summary": "Register a new user",
@@ -22,7 +64,7 @@
             "description": "User object that needs to be added",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/User"
+              "$ref": "#/definitions/UserRegistration"
             }
           }
         ],
@@ -32,6 +74,9 @@
           },
           "400": {
             "description": "Invalid input"
+          },
+          "409": {
+            "description": "User with this email or nickname already exists"
           }
         }
       }
@@ -47,7 +92,7 @@
             "description": "User credentials",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/User"
+              "$ref": "#/definitions/LoginCredentials"
             }
           }
         ],
@@ -69,6 +114,148 @@
         }
       }
     },
+    "/auth/users": {
+      "get": {
+        "summary": "Get all users",
+        "description": "Returns a list of all users.",
+        "responses": {
+          "200": {
+            "description": "A list of users",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/UserProfile"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/friend-requests": {
+      "post": {
+        "summary": "Send a friend request",
+        "description": "Sends a friend request to another user.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "receiverId": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Friend request sent"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "409": {
+            "description": "Friend request already exists or users are already friends"
+          }
+        }
+      }
+    },
+    "/auth/friend-requests/pending": {
+      "get": {
+        "summary": "Get pending friend requests",
+        "description": "Returns a list of pending friend requests for the current user.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of pending friend requests",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FriendRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/friend-requests/handle": {
+      "post": {
+        "summary": "Handle a friend request",
+        "description": "Accepts or rejects a friend request.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "senderId": {
+                  "type": "integer"
+                },
+                "action": {
+                  "type": "string",
+                  "enum": [
+                    "accept",
+                    "reject"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Friend request handled"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Friend request not found"
+          }
+        }
+      }
+    },
+    "/auth/friends": {
+      "get": {
+        "summary": "Get friends",
+        "description": "Returns a list of the current user's friends.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of friends",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/UserProfile"
+              }
+            }
+          }
+        }
+      }
+    },
     "/trips": {
       "get": {
         "summary": "Get all available trips",
@@ -79,7 +266,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Trip"
+                "$ref": "#/definitions/TripSummary"
               }
             }
           }
@@ -104,77 +291,6 @@
             "schema": {
               "$ref": "#/definitions/Trip"
             }
-          },
-          "404": {
-            "description": "Trip not found"
-          }
-        }
-      }
-    },
-    "/trips/{trip_id}/resolve": {
-      "post": {
-        "summary": "Resolve a trip",
-        "description": "Sets the outcome of a trip. (Admin only)",
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "trip_id",
-            "in": "path",
-            "required": true,
-            "type": "integer"
-          },
-          {
-            "in": "body",
-            "name": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "outcome": {
-                  "type": "string",
-                  "example": "on-time"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Trip resolved"
-          },
-          "400": {
-            "description": "Outcome is required"
-          }
-        }
-      }
-    },
-    "/trips/{trip_id}/score": {
-      "post": {
-        "summary": "Score a trip",
-        "description": "Calculates and awards points to users with correct predictions for a resolved trip. (Admin only)",
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "trip_id",
-            "in": "path",
-            "required": true,
-            "type": "integer"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Scoring complete"
-          },
-          "400": {
-            "description": "Trip has not been resolved yet"
           },
           "404": {
             "description": "Trip not found"
@@ -220,8 +336,8 @@
               "type": "object",
               "properties": {
                 "tripId": {
-                  "type": "integer",
-                  "example": 12345
+                  "type": "string",
+                  "example": "12345"
                 },
                 "predictedOutcome": {
                   "type": "string",
@@ -252,7 +368,66 @@
     }
   },
   "definitions": {
-    "User": {
+    "LeaderboardUser": {
+      "type": "object",
+      "properties": {
+        "nickname": {
+          "type": "string"
+        },
+        "cumulativeScore": {
+          "type": "integer"
+        }
+      }
+    },
+    "RouteTrips": {
+      "type": "object",
+      "properties": {
+        "route_id": {
+          "type": "integer"
+        },
+        "route_name": {
+          "type": "string"
+        },
+        "trips": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TripStopTime"
+          }
+        }
+      }
+    },
+    "TripStopTime": {
+      "type": "object",
+      "properties": {
+        "trip_id": {
+          "type": "integer"
+        },
+        "headsign": {
+          "type": "string"
+        },
+        "stop_times": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "UserRegistration": {
+      "type": "object",
+      "properties": {
+        "nickname": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "LoginCredentials": {
       "type": "object",
       "properties": {
         "email": {
@@ -260,9 +435,37 @@
         },
         "password": {
           "type": "string"
+        }
+      }
+    },
+    "UserProfile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
         },
         "nickname": {
-            "type": "string"
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "cumulativeScore": {
+          "type": "integer"
+        }
+      }
+    },
+    "FriendRequest": {
+      "type": "object",
+      "properties": {
+        "senderId": {
+          "type": "integer"
+        },
+        "nickname": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
         }
       }
     },
@@ -272,9 +475,12 @@
         "id": {
           "type": "integer"
         },
-        "trip_id": {
+        "name": {
           "type": "string",
           "description": "The name/identifier from the GTFS static data."
+        },
+        "route_id": {
+          "type": "integer"
         },
         "description": {
           "type": "string"
@@ -285,6 +491,23 @@
         "createdAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "TripSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "trip_id": {
+          "type": "string"
+        },
+        "first_stop": {
+          "type": "string"
+        },
+        "last_stop": {
+          "type": "string"
         }
       }
     },
@@ -312,7 +535,7 @@
       "type": "apiKey",
       "name": "Authorization",
       "in": "header",
-      "description": "JWT Authorization header using the Bearer scheme. Example: \\\"Authorization: Bearer {token}\\\""
+      "description": "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
     }
   }
 }
