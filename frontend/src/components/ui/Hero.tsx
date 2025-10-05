@@ -12,13 +12,15 @@ const Hero: React.FC = () => {
         <div className="hero-content">
           <div className="hero-text">
             <h1 className="hero-title">
-              BussinIt
-              <span className="hero-gradient-text">Predict</span> Bus Delays
+              <span className="hero-gradient-text">BussinIt</span>
+              </h1><h1 className="hero-title">
+              Predict Bus Delays
             </h1>
             
             <p className="hero-description">
-              Make predictions on whether your bus will be on time or late. 
-              Help improve public transportation by sharing your predictions.
+              Transform your daily commute into an exciting prediction game! 
+              Use real-time transit data to forecast bus delays with friends. 
+              Compete, learn, and never miss your bus again.
             </p>
             
             <div className="hero-actions">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { makeAuthenticatedRequest } from '../../utils/auth';
+import { API_ENDPOINTS } from '../../config/api';
 import './Dashboard.css';
 
 interface UserData {
@@ -151,7 +152,7 @@ const Dashboard: React.FC = () => {
       setMakingPrediction(true);
       setError(''); // Clear any previous errors
       
-      const response = await makeAuthenticatedRequest('http://localhost:8000/predictions', {
+      const response = await makeAuthenticatedRequest(API_ENDPOINTS.PREDICTIONS, {
         method: 'POST',
         body: JSON.stringify({
           trip_id: selectedTrip.trip_id,
@@ -163,7 +164,7 @@ const Dashboard: React.FC = () => {
       if (response.ok) {
         // Just reload predictions instead of all dashboard data
         try {
-          const predictionsResponse = await makeAuthenticatedRequest('http://localhost:8000/predictions');
+          const predictionsResponse = await makeAuthenticatedRequest(API_ENDPOINTS.PREDICTIONS);
           if (predictionsResponse.ok) {
             const predictionsData = await predictionsResponse.json();
             setPredictions(predictionsData);
@@ -296,7 +297,7 @@ const Dashboard: React.FC = () => {
             <div className="stat-icon">✅</div>
             <div className="stat-content">
               <div className="stat-value">{accuracy}%</div>
-              <div className="stat-label">On time-o-meter (we believe)</div>
+              <div className="stat-label">Believe-o-meter</div>
             </div>
           </div>
           <div className="stat-card warning">
