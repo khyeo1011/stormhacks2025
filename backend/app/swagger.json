@@ -247,7 +247,7 @@
         }
       }
     },
-    "/trips/{trip_id}": {
+    "/trips/{trip_id}/{service_date}": {
       "get": {
         "summary": "Get a single trip",
         "description": "Returns details for a single trip.",
@@ -257,6 +257,13 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "service_date",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "date"
           }
         ],
         "responses": {
@@ -313,9 +320,14 @@
                   "type": "string",
                   "example": "12345"
                 },
+                "service_date": {
+                  "type": "string",
+                  "format": "date",
+                  "example": "2025-10-26"
+                },
                 "predicted_outcome": {
                   "type": "string",
-                  "example": "early"
+                  "example": "on_time"
                 }
               }
             }
@@ -415,6 +427,10 @@
         "trip_id": {
           "type": "string"
         },
+        "service_date": {
+          "type": "string",
+          "format": "date"
+        },
         "route_id": {
           "type": "string"
         },
@@ -429,6 +445,9 @@
         },
         "shape_id": {
           "type": "string"
+        },
+        "outcome": {
+          "type": "string"
         }
       }
     },
@@ -437,6 +456,10 @@
       "properties": {
         "trip_id": {
           "type": "string"
+        },
+        "service_date": {
+          "type": "string",
+          "format": "date"
         },
         "route_id": {
           "type": "string"
@@ -476,8 +499,13 @@
         "trip_id": {
           "type": "string"
         },
+        "service_date": {
+          "type": "string",
+          "format": "date"
+        },
         "predicted_outcome": {
-          "type": "string"
+          "type": "string",
+          "enum": ["late", "on_time"]
         },
         "created_at": {
           "type": "string",

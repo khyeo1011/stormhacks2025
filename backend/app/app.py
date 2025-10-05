@@ -1,4 +1,3 @@
-
 import os
 from flask import Flask, jsonify, g, current_app
 from flask_jwt_extended import JWTManager
@@ -6,10 +5,12 @@ from flask_swagger_ui import get_swaggerui_blueprint
 import json
 import psycopg2
 from flask_cors import CORS
+from flask_apscheduler import APScheduler
 
 from .auth.routes import auth_bp, get_db_connection
 from .trips import trips_bp, load_data_from_db
 from .predictions import predictions_bp
+from .resolver import resolve_pending_trips
 
 # URL for exposing Swagger UI (without trailing '/')
 SWAGGER_URL = '/api/docs'
@@ -98,6 +99,14 @@ def create_app():
 
     with app.app_context():
         load_data_from_db()
+
+    # Initialize and start the scheduler
+    scheduler = APScheduler()
+    scheduler.init_app(app)
+    scheduler.start()
+
+    # Add a job to resolve pending trips every minute
+    scheduler.add_job(id='resolve_trips', func=resolve_pending_trips, trigger='interval', minutes=1)
 
     return app
 
