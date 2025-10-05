@@ -3,8 +3,8 @@ import os
 from flask import Flask, jsonify, g, request
 from flask_swagger_ui import get_swaggerui_blueprint
 import psycopg2
+from flask_cors import CORS
 from werkzeug.security import generate_password_hash
-
 from .auth.routes import  auth_bp
 
 # URL for exposing Swagger UI (without trailing '/')
@@ -32,7 +32,7 @@ def get_db_connection():
 
 def create_app():
     app = Flask(__name__)
-
+    CORS(app)
     @app.teardown_appcontext
     def close_db(e=None):
         db = g.pop('db', None)
