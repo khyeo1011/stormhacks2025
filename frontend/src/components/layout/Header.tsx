@@ -54,12 +54,6 @@ const Header: React.FC = () => {
                 <Link to="/dashboard">
                   <button className="btn-primary">Dashboard</button>
                 </Link>
-                <Link to="/add-friend">
-                  <button className="btn-secondary">Add Friend</button>
-                </Link>
-                <Link to="/friend-requests">
-                  <button className="btn-secondary">Requests</button>
-                </Link>
                 <Link to="/account">
                   <button className="btn-secondary">My Account</button>
                 </Link>

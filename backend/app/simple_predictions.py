@@ -27,11 +27,18 @@ def get_db_connection():
 def create_simple_prediction():
     data = request.get_json()
     trip_id = data.get('trip_id')
+    service_date_str = data.get('service_date')
     predicted_outcome = data.get('predicted_outcome')
     user_id = get_jwt_identity()
 
-    if not all([trip_id, predicted_outcome]):
-        return jsonify({"error": "trip_id and predicted_outcome are required"}), 400
+    if not all([trip_id, service_date_str, predicted_outcome]):
+        return jsonify({"error": "trip_id, service_date, and predicted_outcome are required"}), 400
+
+    # Validate service_date
+    try:
+        service_date = datetime.strptime(service_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({"error": "Invalid service_date format. Use YYYY-MM-DD."}), 400
 
     # Validate predicted_outcome
     valid_outcomes = ['on_time', 'late', 'early']
@@ -42,15 +49,20 @@ def create_simple_prediction():
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     
     try:
-        # Check if the user has already made a prediction for this trip
-        cur.execute('SELECT 1 FROM predictions WHERE user_id = %s AND trip_id = %s', (user_id, trip_id))
-        if cur.fetchone():
-            return jsonify({"error": "You have already made a prediction for this trip"}), 409
+        # Ensure trip exists for the given date
+        cur.execute('SELECT 1 FROM trips WHERE trip_id = %s AND service_date = %s', (trip_id, service_date))
+        if cur.fetchone() is None:
+            return jsonify({"error": "Trip not found for the given service_date"}), 404
 
-        # Insert the prediction
+        # Check if the user has already made a prediction for this trip and date
+        cur.execute('SELECT 1 FROM predictions WHERE user_id = %s AND trip_id = %s AND service_date = %s', (user_id, trip_id, service_date))
+        if cur.fetchone():
+            return jsonify({"error": "You have already made a prediction for this trip on this date"}), 409
+
+        # Insert the prediction with service_date
         cur.execute(
-            'INSERT INTO predictions (user_id, trip_id, predicted_outcome) VALUES (%s, %s, %s) RETURNING id',
-            (user_id, trip_id, predicted_outcome)
+            'INSERT INTO predictions (user_id, trip_id, service_date, predicted_outcome) VALUES (%s, %s, %s, %s) RETURNING id',
+            (user_id, trip_id, service_date, predicted_outcome)
         )
         prediction_id = cur.fetchone()[0]
         conn.commit()
@@ -59,6 +71,7 @@ def create_simple_prediction():
             'id': prediction_id,
             'message': 'Prediction created successfully',
             'trip_id': trip_id,
+            'service_date': service_date.isoformat(),
             'predicted_outcome': predicted_outcome
         }), 201
         

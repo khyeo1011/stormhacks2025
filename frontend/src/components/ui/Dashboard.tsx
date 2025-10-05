@@ -28,6 +28,9 @@ interface Trip {
   last_stop: string;
   first_stop_arrival_time: string;
   last_stop_arrival_time: string;
+  service_date: string;
+  outcome: string | null;
+  shape_id: string;
 }
 
 interface Prediction {
@@ -75,13 +78,21 @@ const Dashboard: React.FC = () => {
         const tripsData = await tripsResponse.json();
         // Filter trips that haven't started yet
         const availableTrips = tripsData.filter((trip: Trip) => {
-          const tripTime = trip.first_stop_arrival_time;
-          const now = new Date();
-          const currentTime = now.getHours() * 10000 + now.getMinutes() * 100 + now.getSeconds();
-          const tripTimeNum = parseInt(tripTime.replace(':', ''), 10);
-          return tripTimeNum > currentTime;
+          try {
+            const now = new Date();
+            const tripDateTime = new Date(`${trip.service_date}T${trip.first_stop_arrival_time}`);
+            
+            // Only show trips that haven't started yet
+            return tripDateTime > now;
+          } catch (error) {
+            console.error('Error parsing trip date/time:', error, trip);
+            return false;
+          }
         });
         setTrips(availableTrips.slice(0, 20)); // Show first 20 available trips
+      } else {
+        console.error('Failed to load trips:', tripsResponse.status, tripsResponse.statusText);
+        setError('Failed to load available trips');
       }
 
       if (predictionsResponse.ok) {
@@ -116,10 +127,11 @@ const Dashboard: React.FC = () => {
 
     try {
       setMakingPrediction(true);
-      const response = await makeAuthenticatedRequest('http://localhost:8000/spredictions', {
+      const response = await makeAuthenticatedRequest('http://localhost:8000/predictions', {
         method: 'POST',
         body: JSON.stringify({
           trip_id: selectedTrip.trip_id,
+          service_date: selectedTrip.service_date,
           predicted_outcome: predictionOutcome
         })
       });
@@ -286,7 +298,7 @@ const Dashboard: React.FC = () => {
                 <option value="">Choose a trip...</option>
                 {trips.map(trip => (
                   <option key={trip.trip_id} value={trip.trip_id}>
-                    {trip.first_stop} → {trip.last_stop} ({trip.first_stop_arrival_time})
+                    {trip.trip_headsign}: {trip.first_stop} → {trip.last_stop} ({trip.first_stop_arrival_time})
                   </option>
                 ))}
               </select>
@@ -309,13 +321,6 @@ const Dashboard: React.FC = () => {
                     onClick={() => setPredictionOutcome('late')}
                   >
                     ⏰ Late
-                  </button>
-                  <button
-                    type="button"
-                    className={`prediction-btn ${predictionOutcome === 'early' ? 'active' : ''}`}
-                    onClick={() => setPredictionOutcome('early')}
-                  >
-                    ⚡ Early
                   </button>
                 </div>
               </div>
@@ -350,7 +355,6 @@ const Dashboard: React.FC = () => {
                   <div className={`prediction-outcome ${prediction.predicted_outcome}`}>
                     {prediction.predicted_outcome === 'on_time' && '✅ On Time'}
                     {prediction.predicted_outcome === 'late' && '⏰ Late'}
-                    {prediction.predicted_outcome === 'early' && '⚡ Early'}
                   </div>
                   <div className="prediction-date">
                     {new Date(prediction.created_at).toLocaleDateString()}

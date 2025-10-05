@@ -1,14 +1,12 @@
-import os
 import requests
 from google.transit import gtfs_realtime_pb2
 import psycopg2
 import psycopg2.extras
-import pandas as pd
 from datetime import datetime, timedelta
 from flask import current_app
 
 from .auth.routes import get_db_connection
-from .trips import stop_times_df, trips_df, update_scores
+from .trips import update_scores
 
 # --- GTFS Realtime API Configuration ---
 API_KEY = "obFPHNKClWefKaJgzVec" # This should be in environment variables
@@ -21,6 +19,11 @@ def resolve_pending_trips():
     """
     with current_app.app_context():
         print("Running resolver to check for pending trips...")
+        
+        # Load dataframes within the function context
+        from .trips import load_data_from_db, stop_times_df, trips_df
+        load_data_from_db()
+        
         conn = None
         try:
             conn = get_db_connection()
