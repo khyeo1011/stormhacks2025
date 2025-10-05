@@ -11,6 +11,7 @@ from .auth.routes import auth_bp, get_db_connection
 from .trips import trips_bp, load_data_from_db
 from .predictions import predictions_bp
 from .resolver import resolve_pending_trips
+from .simple_predictions import simple_predictions_bp
 
 # URL for exposing Swagger UI (without trailing '/')
 SWAGGER_URL = '/api/docs'
@@ -96,6 +97,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(trips_bp)
     app.register_blueprint(predictions_bp)
+    app.register_blueprint(simple_predictions_bp)
 
     with app.app_context():
         load_data_from_db()

@@ -30,6 +30,11 @@ def create_prediction():
     if predicted_outcome not in ["late", "on_time"]:
         return jsonify({"error": "predicted_outcome must be 'late' or 'on_time'"}), 400
 
+    # Ensure data is loaded
+    if trips_df.empty:
+        from .trips import load_data_from_db
+        load_data_from_db()
+
     # Get trip from the in-memory dataframe
     trip = trips_df[(trips_df['trip_id'] == gtfs_trip_id) & (trips_df['service_date'] == service_date)]
     if trip.empty:

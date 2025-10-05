@@ -44,8 +44,8 @@ const Login: React.FC = () => {
       if (response.ok) {
         // Use auth context to store token
         login(data.access_token);
-        // Redirect to home page
-        window.location.href = '/';
+        // Redirect to dashboard
+        window.location.href = '/dashboard';
       } else {
         setError(data.msg || 'Login failed');
       }
