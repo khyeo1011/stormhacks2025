@@ -41,8 +41,8 @@ Make sure you have the following installed:
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/your-username/buss-in-it.git
-    cd buss-in-it
+    git clone https://github.com/your-username/stormhacks2025.git
+    cd stormhacks2025
     ```
 
 2.  **Build and run the application:**
@@ -55,9 +55,9 @@ Make sure you have the following installed:
 
 3.  **Initialize the database with static GTFS data:**
 
-    After the services are running, you need to populate the database with initial bus route and schedule data. This step is crucial and only needs to be performed once after the first setup or if you clear your database volume.
+    After the services are running, you need to populate the database with initial bus route and schedule data. This step is crucial and only needs to be performed once after the first setup or if you clear your database volume. **This should be done automatically, but if it fails run:**
 
-    ```bash
+    ```
     docker-compose exec backend python /app/load_static_data.py
     ```
 
