@@ -1,6 +1,7 @@
 import pandas as pd
 from sqlalchemy import create_engine, text
 import os
+from datetime import datetime, timedelta
 
 # Database connection settings from docker-compose
 db_user = os.environ.get("POSTGRES_USER")
@@ -46,6 +47,41 @@ calendar_df = calendar_df[['service_id', 'monday', 'tuesday', 'wednesday', 'thur
 trips_df = trips_df[['trip_id', 'route_id', 'service_id', 'trip_headsign', 'direction_id', 'shape_id']]
 stop_times_df = stop_times_df[['trip_id', 'arrival_time', 'departure_time', 'stop_id', 'stop_sequence']]
 
+# --- Expand trips and stop_times with service_date ---
+expanded_trips_data = []
+for idx, trip_row in trips_df.iterrows():
+    service_id = trip_row['service_id']
+    calendar_entry = calendar_df[calendar_df['service_id'] == service_id].iloc[0]
+
+    start_date = datetime.strptime(str(calendar_entry['start_date']), '%Y%m%d').date()
+    end_date = datetime.strptime(str(calendar_entry['end_date']), '%Y%m%d').date()
+
+    current_date = start_date
+    while current_date <= end_date:
+        day_of_week = current_date.weekday() # Monday is 0, Sunday is 6
+        
+        service_runs_today = False
+        if day_of_week == 0 and calendar_entry['monday'] == 1: service_runs_today = True
+        if day_of_week == 1 and calendar_entry['tuesday'] == 1: service_runs_today = True
+        if day_of_week == 2 and calendar_entry['wednesday'] == 1: service_runs_today = True
+        if day_of_week == 3 and calendar_entry['thursday'] == 1: service_runs_today = True
+        if day_of_week == 4 and calendar_entry['friday'] == 1: service_runs_today = True
+        if day_of_week == 5 and calendar_entry['saturday'] == 1: service_runs_today = True
+        if day_of_week == 6 and calendar_entry['sunday'] == 1: service_runs_today = True
+
+        if service_runs_today:
+            new_trip_row = trip_row.copy()
+            new_trip_row['service_date'] = current_date
+            expanded_trips_data.append(new_trip_row)
+        
+        current_date += timedelta(days=1)
+
+trips_df_expanded = pd.DataFrame(expanded_trips_data)
+
+# Merge stop_times with expanded trips to get service_date for each stop_time
+stop_times_df_expanded = pd.merge(stop_times_df, trips_df_expanded[['trip_id', 'service_date']], on='trip_id', how='inner')
+
+# --- End Expand trips and stop_times with service_date ---
 
 with engine.connect() as connection:
     connection.execute(text("DROP TABLE IF EXISTS stop_times CASCADE"))
@@ -53,6 +89,10 @@ with engine.connect() as connection:
     connection.execute(text("DROP TABLE IF EXISTS stops CASCADE"))
     connection.execute(text("DROP TABLE IF EXISTS routes CASCADE"))
     connection.execute(text("DROP TABLE IF EXISTS calendar CASCADE"))
+    connection.execute(text("DROP TABLE IF EXISTS predictions CASCADE"))
+    connection.execute(text("DROP TABLE IF EXISTS friends CASCADE"))
+    connection.execute(text("DROP TABLE IF EXISTS friend_requests CASCADE"))
+    connection.execute(text("DROP TABLE IF EXISTS users CASCADE"))
     connection.commit()
 
 # Write DataFrames to the database
@@ -62,9 +102,9 @@ print(f"Loading {len(routes_df)} routes...")
 routes_df.to_sql('routes', engine, if_exists='append', index=False)
 print(f"Loading {len(calendar_df)} calendar entries...")
 calendar_df.to_sql('calendar', engine, if_exists='append', index=False)
-print(f"Loading {len(trips_df)} trips...")
-trips_df.to_sql('trips', engine, if_exists='append', index=False)
-print(f"Loading {len(stop_times_df)} stop times...")
-stop_times_df.to_sql('stop_times', engine, if_exists='append', index=False)
+print(f"Loading {len(trips_df_expanded)} expanded trips...")
+trips_df_expanded.to_sql('trips', engine, if_exists='append', index=False)
+print(f"Loading {len(stop_times_df_expanded)} expanded stop times...")
+stop_times_df_expanded.to_sql('stop_times', engine, if_exists='append', index=False)
 
 print("Data loaded successfully into the database.")
