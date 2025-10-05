@@ -64,6 +64,23 @@
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
   margin-top: 2rem;
+  justify-items: stretch;
+  align-items: stretch;
+}
+
+/* Tablet: force a 2x2 grid (wider range for reliability across devices) */
+@media (min-width: 700px) and (max-width: 1100px) {
+  .about-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Ensure stat cards fill grid cell height */
+.stat-item {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .stat-item {

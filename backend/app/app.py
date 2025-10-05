@@ -8,7 +8,7 @@ from flask_cors import CORS
 from flask_apscheduler import APScheduler
 
 from .auth.routes import auth_bp, get_db_connection
-from .trips import trips_bp, load_data_from_db
+from .trips import trips_bp, load_data_from_db, trips_df, stop_times_df # Import global dataframes
 from .predictions import predictions_bp
 from .resolver import resolve_pending_trips
 from .contact import contact_bp
@@ -97,6 +97,7 @@ def create_app():
     app.register_blueprint(predictions_bp)
     app.register_blueprint(contact_bp)
 
+    # Load dataframes once at startup
     with app.app_context():
         load_data_from_db()
 
@@ -105,8 +106,8 @@ def create_app():
     scheduler.init_app(app)
     scheduler.start()
 
-    # Add a job to resolve pending trips every minute
-    scheduler.add_job(id='resolve_trips', func=resolve_pending_trips, trigger='interval', minutes=1)
+    # Add a job to resolve pending trips every minute, passing the app and dataframes
+    scheduler.add_job(id='resolve_trips', func=resolve_pending_trips, trigger='interval', minutes=1, args=[app, trips_df, stop_times_df])
 
     return app
 

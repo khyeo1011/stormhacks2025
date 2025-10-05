@@ -528,6 +528,141 @@
   font-size: 0.8rem;
 }
 
+/* Prediction History Styles */
+.prediction-history {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.prediction-history h2 {
+  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 0.5rem;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  background: #f8f9ff;
+  border-radius: 12px;
+  border-left: 4px solid #e1e5e9;
+  transition: all 0.3s ease;
+}
+
+.history-item:hover {
+  background: #f0f2ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.history-trip {
+  flex: 1;
+  min-width: 0;
+}
+
+.trip-headsign {
+  font-weight: 600;
+  color: #333;
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.trip-date {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.history-prediction {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0 1.5rem;
+}
+
+.predicted,
+.actual {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.label {
+  font-weight: 500;
+  color: #555;
+  font-size: 0.9rem;
+  min-width: 70px;
+}
+
+.outcome {
+  padding: 0.25rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.outcome.on_time {
+  background: #d4edda;
+  color: #155724;
+}
+
+.outcome.late {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.outcome.early {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.outcome.pending {
+  background: #e2e3e5;
+  color: #6c757d;
+}
+
+.history-result {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 100px;
+  text-align: center;
+}
+
+.history-result.correct {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.history-result.incorrect {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.history-result.pending {
+  background: #e2e3e5;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+}
+
 /* Available Trips */
 .available-trips {
   background: white;
@@ -670,9 +805,14 @@
     grid-row: 4;
   }
   
-  .available-trips {
+  .prediction-history {
     grid-column: 1;
     grid-row: 5;
+  }
+  
+  .available-trips {
+    grid-column: 1;
+    grid-row: 6;
   }
 }
 
@@ -888,6 +1028,23 @@
 
   .prediction-item {
     padding: 0.6rem;
+  }
+  
+  .history-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .history-prediction {
+    margin: 0;
+    width: 100%;
+  }
+  
+  .history-result {
+    align-self: flex-end;
+    min-width: auto;
   }
 
   .trips-pagination {
