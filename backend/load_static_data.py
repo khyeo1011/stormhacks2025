@@ -1,5 +1,5 @@
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import os
 
 # Database connection settings from docker-compose
@@ -47,16 +47,24 @@ trips_df = trips_df[['trip_id', 'route_id', 'service_id', 'trip_headsign', 'dire
 stop_times_df = stop_times_df[['trip_id', 'arrival_time', 'departure_time', 'stop_id', 'stop_sequence']]
 
 
+with engine.connect() as connection:
+    connection.execute(text("DROP TABLE IF EXISTS stop_times CASCADE"))
+    connection.execute(text("DROP TABLE IF EXISTS trips CASCADE"))
+    connection.execute(text("DROP TABLE IF EXISTS stops CASCADE"))
+    connection.execute(text("DROP TABLE IF EXISTS routes CASCADE"))
+    connection.execute(text("DROP TABLE IF EXISTS calendar CASCADE"))
+    connection.commit()
+
 # Write DataFrames to the database
 print(f"Loading {len(stops_df)} stops...")
-stops_df.to_sql('stops', engine, if_exists='replace', index=False)
+stops_df.to_sql('stops', engine, if_exists='append', index=False)
 print(f"Loading {len(routes_df)} routes...")
-routes_df.to_sql('routes', engine, if_exists='replace', index=False)
+routes_df.to_sql('routes', engine, if_exists='append', index=False)
 print(f"Loading {len(calendar_df)} calendar entries...")
-calendar_df.to_sql('calendar', engine, if_exists='replace', index=False)
+calendar_df.to_sql('calendar', engine, if_exists='append', index=False)
 print(f"Loading {len(trips_df)} trips...")
-trips_df.to_sql('trips', engine, if_exists='replace', index=False)
+trips_df.to_sql('trips', engine, if_exists='append', index=False)
 print(f"Loading {len(stop_times_df)} stop times...")
-stop_times_df.to_sql('stop_times', engine, if_exists='replace', index=False)
+stop_times_df.to_sql('stop_times', engine, if_exists='append', index=False)
 
 print("Data loaded successfully into the database.")
