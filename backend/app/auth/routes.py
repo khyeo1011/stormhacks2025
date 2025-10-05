@@ -1,6 +1,30 @@
 from flask import Blueprint
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+ALLOWED_EXTENTIONS = ('png', 'jpg', 'jpeg',)
+UPLOAD_FOLDER = 'static/uploads/'
+
+def allowed_file(filename):
+    'check if file extention is valid'
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENTIONS
+
+def upload_image(photo):
+    """
+    function for saving photos to UPLOAD_FOLDER directory
+    :return: path to saved file
+    """
+
+    if photo.filename == '':
+        flash("No image selected")
+        return redirect(request.url)
+
+    if photo and allowed_file(photo.filename):
+        filename = secure_filename(photo.filename)
+        photo.save(os.path.join(UPLOAD_FOLDER, filename))
+
+        flash("uploaded")
+        return os.path.join(UPLOAD_FOLDER, filename)
+
 
 @auth_bp.route('/users', methods=['GET'])
 def get_users():
