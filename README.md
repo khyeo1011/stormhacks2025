@@ -15,6 +15,7 @@ Buss-in-it is an engaging web game that challenges players to predict the punctu
 *   **Automated Trip Resolution:** A background service automatically resolves bus trips near their scheduled arrival times, updating outcomes and scoring predictions without manual intervention.
 *   **Dynamic Trip Filtering:** The backend efficiently loads and serves trips for the current day, with options for frontend filtering by date range.
 *   **Scalable Architecture:** Containerized development using Docker and Docker Compose ensures a consistent and easily deployable environment.
+*   **AI Model:** A machine learning pipeline to predict bus delays based on real-time and historical data.
 
 ## How to Play
 
