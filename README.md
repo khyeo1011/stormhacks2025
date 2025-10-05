@@ -10,7 +10,7 @@ Buss-in-it is an engaging web game that challenges players to predict the punctu
 
 ## Features
 
-*   **Bus Prediction Game:** Predict whether a bus will arrive "on time" or "late" at its final destination. "Early" arrivals are considered "on time" for simplified gameplay.
+*   **Bus Prediction Game:** Predict whether a bus will arrive "on time" or "late" at its final destination. "Early" arrivals are considered "on time" for simplified gameplay ~~Translink buses don't really come early anyways~~.
 *   **Real-time Data Integration:** Leverages Translink's GTFS Realtime API to fetch live bus movement data, ensuring dynamic and accurate game outcomes.
 *   **User Authentication & Profiles:** Secure user registration and login, with individual profiles tracking cumulative scores based on prediction accuracy.
 *   **Social Features:** Send and manage friend requests, view friends' activities, and compete for the top spot on a global leaderboard.
