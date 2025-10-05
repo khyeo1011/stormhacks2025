@@ -262,7 +262,7 @@
 .bus-illustration {
   position: relative;
   width: 300px;
-  height: 220px;
+  height: 330px;
   max-width: 100%;
   overflow: hidden;
 }
@@ -326,7 +326,7 @@
 .prediction-bubble {
   position: absolute;
   top: 20px;
-  right: 20px;
+  right: 40px;
   background: white;
   padding: 1rem;
   border-radius: 15px;
@@ -459,8 +459,8 @@
   }
 
   .bus-illustration {
-    width: 280px;
-    height: 200px;
+    width: 100%;
+    height: 300px;
     max-width: 100%;
   }
 
@@ -510,8 +510,8 @@
   }
 
   .bus-illustration {
-    width: 280px;
-    height: 180px;
+    width: 100%;
+    height: 270px;
     max-width: 100%;
   }
 
@@ -578,8 +578,8 @@
   }
 
   .bus-illustration {
-    width: 280px;
-    height: 160px;
+    width: 100%;
+    height: 240px;
     max-width: 100%;
   }
 

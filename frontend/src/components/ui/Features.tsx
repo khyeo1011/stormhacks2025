@@ -9,7 +9,7 @@ const Features: React.FC = () => {
     {
       icon: '🤖',
       title: 'AI-Powered Predictions',
-      description: 'Advanced machine learning algorithms analyze historical data, weather, traffic, and real-time conditions to provide accurate bus arrival predictions.',
+      description: 'We use the latest in AI technology to predict bus delays with high accuracy.',
       gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
     },
     {
@@ -21,7 +21,7 @@ const Features: React.FC = () => {
     {
       icon: '🗺️',
       title: 'Smart Routing',
-      description: 'Discover alternative routes and connections when your usual bus is delayed. Find the fastest way to your destination.',
+      description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
       gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
     },
     {
@@ -32,14 +32,14 @@ const Features: React.FC = () => {
     },
     {
       icon: '🚌',
-      title: 'Multi-Transit Support',
-      description: 'Works with buses, trams, and other public transportation systems across multiple cities and transit agencies.',
+      title: 'Lorem Ipsum',
+      description: 'dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
       gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
     },
     {
-      icon: '📊',
-      title: 'Analytics Dashboard',
-      description: 'Track your commuting patterns, view reliability statistics, and get insights to optimize your daily travel.',
+      icon: '👥',
+      title: 'Collaborative',
+      description: 'You can compete with your friends to see who can predict the most accurate delays.',
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
     }
   ];

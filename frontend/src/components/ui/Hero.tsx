@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Hero.css';
 
 const Hero: React.FC = () => {
@@ -24,12 +25,12 @@ const Hero: React.FC = () => {
             </p>
             
             <div className="hero-actions">
-              <button className="btn-primary-large">
+              <Link to="/login" className="btn-primary-large">
                 <span>Start Predicting</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-              </button>
+              </Link>
               
               <button className="btn-secondary-large">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
