@@ -56,15 +56,19 @@ def get_users():
 
 @auth_bp.route('/register', methods=['POST'])
 def add_user():
-    data = request.form.to_dict()
-    # data = request.get_json()
-    email = data['email']
-    password = data['password']
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+    
+    email = data.get('email')
+    password = data.get('password')
     nickname = data.get('nickname')
 
+    if not all([email, password, nickname]):
+        return jsonify({'error': 'Email, password, and nickname are required'}), 400
 
     cumulativeScore = 0
-
     hashed_password = generate_password_hash(password)
 
     conn = get_db_connection()
@@ -77,11 +81,15 @@ def add_user():
         user_id = cur.fetchone()[0]
         conn.commit()
         cur.close()
-        return jsonify({'id': user_id}), 201
+        return jsonify({'id': user_id, 'message': 'User created successfully'}), 201
     except psycopg2.IntegrityError:
         conn.rollback()
         cur.close()
-        return jsonify({'error': 'email already exists'}), 409
+        return jsonify({'error': 'Email already exists'}), 409
+    except Exception:
+        conn.rollback()
+        cur.close()
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 

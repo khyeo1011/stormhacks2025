@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './Header.css';
 
 const Header: React.FC = () => {
@@ -29,7 +30,10 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="header-actions">
-            <button className="btn-primary">Get Started</button>
+            <button className="btn-secondary">Login</button>
+            <Link to="/register">
+              <button className="btn-primary">Register</button>
+            </Link>
           </div>
         </div>
 
@@ -40,6 +44,7 @@ const Header: React.FC = () => {
             <span></span>
           </span>
         </button>
+
       </div>
 
       {/* Mobile Menu */}
@@ -49,9 +54,8 @@ const Header: React.FC = () => {
           <li><a href="#features" className="mobile-nav-link" onClick={toggleMenu}>Features</a></li>
           <li><a href="#about" className="mobile-nav-link" onClick={toggleMenu}>About</a></li>
           <li><a href="#contact" className="mobile-nav-link" onClick={toggleMenu}>Contact</a></li>
-          <li className="mobile-cta">
-            <button className="btn-primary-mobile" onClick={toggleMenu}>Get Started</button>
-          </li>
+          <li><a href="#login" className="mobile-nav-link" onClick={toggleMenu}>Login</a></li>
+          <li><Link to="/register" className="mobile-nav-link" onClick={toggleMenu}>Register</Link></li>
         </ul>
       </nav>
     </header>
