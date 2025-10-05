@@ -1,6 +1,8 @@
 # Buss-in-it
 
-> A web game where you predict if a Translink bus will be on time.
+Ever get sick and tired of waiting for the bus, wondering if it'll ever show up?
+
+ With Buss-in-it, you can stop just waiting and become part of the action!
 
 ## Description
 
