@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, g, current_app
+from flask import Flask, jsonify, g, current_app, redirect, url_for
 from flask_jwt_extended import JWTManager
 from flask_swagger_ui import get_swaggerui_blueprint
 import json
@@ -70,7 +70,7 @@ def create_app():
 
     @app.route('/')
     def hello():
-        return "Hello from Flask!"
+        return redirect("/api/docs")
 
     @app.route('/leaderboard', methods=['GET'])
     def get_leaderboard():
