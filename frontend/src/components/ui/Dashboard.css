@@ -570,7 +570,6 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   margin-bottom: 2rem;
   grid-column: 1 / -1; /* span full width on desktop */
-  grid-row: 4;
   max-width: 100%;
   min-width: 0;
 }
@@ -708,7 +707,6 @@
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   grid-column: 1 / -1;
-  grid-row: 5; /* move below prediction history */
   max-width: 100%;
   min-width: 0;
   overflow: hidden;
@@ -853,14 +851,12 @@
     grid-row: 4;
   }
   
-  .prediction-history {
-    grid-column: 1;
-    grid-row: 5;
-  }
-  
   .available-trips {
     grid-column: 1;
-    grid-row: 6;
+  }
+  
+  .prediction-history {
+    grid-column: 1;
   }
 }
 
