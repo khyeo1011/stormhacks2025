@@ -183,7 +183,7 @@ def handle_friend_request(): # Renamed from handle_friend_request
 
         if action == 'accept':
             # Add friendship in both directions
-            cur.execute('INSERT INTO "friends" ("user_id", "friend_id") VALUES (%s, %s)', (receiverId, senderId))
+            cur.execute('INSERT INTO "friends" ("user_id", "friend_id") VALUES (%s, %s)', (receiver_id, sender_id))
             cur.execute('INSERT INTO "friends" ("user_id", "friend_id") VALUES (%s, %s)', (sender_id, receiver_id))
 
         conn.commit()
