@@ -32,7 +32,6 @@ blueprint = get_swaggerui_blueprint(
 
 def create_app():
     app = Flask(__name__)
-    CORS(app)
 
     # Configure CORS for API endpoints and Swagger
     origins_env = os.getenv("FRONTEND_ORIGINS") or os.getenv("FRONTEND_ORIGIN")
@@ -44,6 +43,14 @@ def create_app():
             "http://127.0.0.1:3000",
             "https://localhost:3000",
             "https://127.0.0.1:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "https://localhost:5173",
+            "https://127.0.0.1:5173",
+            "http://localhost:5000",
+            "http://127.0.0.1:5000",
+            "https://localhost:5000",
+            "https://127.0.0.1:5000",
         ]
 
     CORS(

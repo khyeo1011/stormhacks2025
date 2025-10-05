@@ -140,12 +140,32 @@
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
+.btn-secondary {
+  background: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
 .menu-toggle {
   display: none;
   background: none;
   border: none;
   cursor: pointer;
   padding: 0.5rem;
+  z-index: 1001;
 }
 
 .hamburger {
@@ -195,13 +215,18 @@
   background: white;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   transform: translateY(-100%);
-  transition: transform 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   display: none;
+  opacity: 0;
+  visibility: hidden;
 }
 
 .nav-mobile.open {
   transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .mobile-nav-list {
@@ -235,6 +260,7 @@
   width: 100%;
   display: flex;
   justify-content: center;
+  gap: 1rem;
 }
 
 .btn-primary-mobile {
@@ -257,8 +283,29 @@
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
+.btn-secondary-mobile {
+  background: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  max-width: 200px;
+}
+
+.btn-secondary-mobile:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .header-container {
     padding: 0 1rem;
     justify-content: space-between;
@@ -284,15 +331,26 @@
   }
 
   .menu-toggle {
-    display: block;
+    display: block !important;
     position: absolute;
     right: 1rem;
     top: 50%;
     transform: translateY(-50%);
+    z-index: 1001;
   }
 
-  .btn-primary {
+  .btn-primary, .btn-secondary {
     display: none;
+  }
+}
+
+@media (min-width: 1025px) {
+  .menu-toggle {
+    display: none !important;
+  }
+  
+  .nav-mobile {
+    display: none !important;
   }
 }
 
