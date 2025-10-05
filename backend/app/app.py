@@ -1,11 +1,15 @@
 
 import os
 from flask import Flask, jsonify, g, request
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 from flask_swagger_ui import get_swaggerui_blueprint
 import psycopg2
 from flask_cors import CORS
-from werkzeug.security import generate_password_hash
-from .auth.routes import  auth_bp
+
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from .auth.routes import auth_bp
+from .auth.routes import get_db_connection
 
 # URL for exposing Swagger UI (without trailing '/')
 SWAGGER_URL = '/api/docs'
@@ -20,19 +24,17 @@ blueprint = get_swaggerui_blueprint(
     },
 )
 
-def get_db_connection():
-    if 'db' not in g:
-        g.db = psycopg2.connect(
-            host=os.environ.get('POSTGRES_HOST'),
-            database=os.environ.get('POSTGRES_DB'),
-            user=os.environ.get('POSTGRES_USER'),
-            password=os.environ.get('POSTGRES_PASSWORD')
-        )
-    return g.db
+
+
 
 def create_app():
     app = Flask(__name__)
     CORS(app)
+
+    # Setup the Flask-JWT-Extended extension
+    app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY', 'super-secret-fallback') # Change this in production!
+    jwt = JWTManager(app)
+
     @app.teardown_appcontext
     def close_db(e=None):
         db = g.pop('db', None)
@@ -42,7 +44,6 @@ def create_app():
     @app.route('/')
     def hello():
         return "Hello from Flask!"
-
 
 
     # Minimal OpenAPI 3.0 spec so Swagger UI can render
@@ -75,9 +76,10 @@ def create_app():
                         }
                     }
                 },
-                "/users": {
+                "/auth/users": {
                     "get": {
                         "summary": "Get all users",
+                        "security": [{"bearerAuth": []}],
                         "responses": {
                             "200": {
                                 "description": "A list of users",

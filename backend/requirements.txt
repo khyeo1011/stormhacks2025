@@ -2,4 +2,5 @@ Flask
 psycopg2-binary
 flask-swagger-ui
 flask-cors
+flask-jwt-extended
 Pillow
