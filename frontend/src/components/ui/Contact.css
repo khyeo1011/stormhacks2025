@@ -57,11 +57,18 @@
   border-radius: 12px;
   display: inline-block;
   margin-top: 0.5rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: none;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
   position: relative;
   background-color: rgba(255, 255, 255, 0.1);
+  width: 300px;
+  height: 60px;
+  text-align: center;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes gradientFlow {

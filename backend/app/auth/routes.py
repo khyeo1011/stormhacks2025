@@ -163,6 +163,21 @@ def handle_friend_request():
         cur.close()
         return jsonify({"error": str(e)}), 500
 
+@auth_bp.route('/profile', methods=['GET'])
+@jwt_required()
+def get_profile():
+    user_id = get_jwt_identity()
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute('SELECT "id", "email", "nickname", "cumulativeScore", "createdAt" FROM "users" WHERE "id" = %s', (user_id,))
+    user = cur.fetchone()
+    cur.close()
+    
+    if user:
+        return jsonify(dict(user))
+    else:
+        return jsonify({'error': 'User not found'}), 404
+
 @auth_bp.route('/friends', methods=['GET'])
 @jwt_required()
 def get_friends():

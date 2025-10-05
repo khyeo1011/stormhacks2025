@@ -1,7 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Features.css';
 
 const Features: React.FC = () => {
+  const navigate = useNavigate();
+  
   const features = [
     {
       icon: '🤖',
@@ -76,7 +79,7 @@ const Features: React.FC = () => {
             <p className="cta-description">
               Join thousands of users who have already made their daily travel more predictable and stress-free.
             </p>
-            <button className="btn-cta">
+            <button className="btn-cta" onClick={() => navigate('/register')}>
               <span>Get Started Today</span>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

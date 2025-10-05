@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import './Register.css';
 
 const Register: React.FC = () => {
-  const { login } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -64,7 +64,7 @@ const Register: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess('Account created successfully! You can now log in.');
+        setSuccess('Account created successfully! Redirecting to login...');
         // Reset form
         setFormData({
           email: '',
@@ -72,6 +72,10 @@ const Register: React.FC = () => {
           confirmPassword: '',
           nickname: ''
         });
+        // Redirect to login page after 2 seconds
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
       } else {
         setError(data.error || 'Registration failed');
       }

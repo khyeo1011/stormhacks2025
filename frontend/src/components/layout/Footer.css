@@ -31,7 +31,11 @@
 
 .footer-logo .bus-icon {
   font-size: 2rem;
-  animation: bounce 2s infinite;
+  transition: transform 0.3s ease;
+}
+
+.footer-logo:hover .bus-icon {
+  animation: bounce 0.6s ease-in-out;
 }
 
 .footer-logo .logo-text {

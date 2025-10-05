@@ -36,7 +36,7 @@ const Contact: React.FC = () => {
   };
 
   return (
-    <section className="contact">
+    <section id="contact" className="contact">
       <div className="contact-container">
         <h2>Contact Us</h2>
         <p>Get in touch with us for any questions or support.</p>

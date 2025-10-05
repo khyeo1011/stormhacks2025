@@ -8,6 +8,7 @@ import About from './components/ui/About';
 import Contact from './components/ui/Contact';
 import Register from './components/ui/Register';
 import Login from './components/ui/Login';
+import Account from './components/ui/Account';
 import './App.css';
 
 function App() {
@@ -25,8 +26,21 @@ function App() {
                 <Contact />
               </main>
             } />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={
+              <main className="main-content">
+                <Register />
+              </main>
+            } />
+            <Route path="/login" element={
+              <main className="main-content">
+                <Login />
+              </main>
+            } />
+            <Route path="/account" element={
+              <main className="main-content">
+                <Account />
+              </main>
+            } />
           </Routes>
           <Footer />
         </div>

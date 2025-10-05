@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import './Header.css';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -16,29 +17,45 @@ const Header: React.FC = () => {
     setIsMenuOpen(false);
   };
 
+  const handleNavClick = (sectionId: string) => {
+    navigate('/');
+    setTimeout(() => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+    setIsMenuOpen(false);
+  };
+
   return (
     <header className="header">
       <div className="header-container">
         <div className="logo-section">
-          <a href="#home" className="logo">
+          <button onClick={() => handleNavClick('home')} className="logo">
             <div className="bus-icon">🚌</div>
             <span className="logo-text">BussinIt</span>
-          </a>
+          </button>
         </div>
         
         <div className="header-right">
           <nav className="nav-desktop"> 
             <ul className="nav-list">
-              <li><a href="#home" className="nav-link">Home</a></li>
-              <li><a href="#features" className="nav-link">Features</a></li>
-              <li><a href="#about" className="nav-link">About</a></li>
-              <li><a href="#contact" className="nav-link">Contact</a></li>
+              <li><button onClick={() => handleNavClick('home')} className="nav-link">Home</button></li>
+              <li><button onClick={() => handleNavClick('features')} className="nav-link">Features</button></li>
+              <li><button onClick={() => handleNavClick('about')} className="nav-link">About</button></li>
+              <li><button onClick={() => handleNavClick('contact')} className="nav-link">Contact</button></li>
             </ul>
           </nav>
 
           <div className="header-actions">
             {isAuthenticated ? (
-              <button className="btn-secondary" onClick={handleLogout}>Logout</button>
+              <>
+                <Link to="/account">
+                  <button className="btn-secondary">My Account</button>
+                </Link>
+                <button className="btn-secondary" onClick={handleLogout}>Logout</button>
+              </>
             ) : (
               <>
                 <Link to="/login">
@@ -65,12 +82,15 @@ const Header: React.FC = () => {
       {/* Mobile Menu */}
       <nav className={`nav-mobile ${isMenuOpen ? 'open' : ''}`}>
         <ul className="mobile-nav-list">
-          <li><a href="#home" className="mobile-nav-link" onClick={toggleMenu}>Home</a></li>
-          <li><a href="#features" className="mobile-nav-link" onClick={toggleMenu}>Features</a></li>
-          <li><a href="#about" className="mobile-nav-link" onClick={toggleMenu}>About</a></li>
-          <li><a href="#contact" className="mobile-nav-link" onClick={toggleMenu}>Contact</a></li>
+          <li><button onClick={() => handleNavClick('home')} className="mobile-nav-link">Home</button></li>
+          <li><button onClick={() => handleNavClick('features')} className="mobile-nav-link">Features</button></li>
+          <li><button onClick={() => handleNavClick('about')} className="mobile-nav-link">About</button></li>
+          <li><button onClick={() => handleNavClick('contact')} className="mobile-nav-link">Contact</button></li>
           {isAuthenticated ? (
-            <li><button className="mobile-nav-link" onClick={handleLogout}>Logout</button></li>
+            <>
+              <li><Link to="/account" className="mobile-nav-link" onClick={toggleMenu}>My Account</Link></li>
+              <li><button className="mobile-nav-link" onClick={handleLogout}>Logout</button></li>
+            </>
           ) : (
             <>
               <li><Link to="/login" className="mobile-nav-link" onClick={toggleMenu}>Login</Link></li>

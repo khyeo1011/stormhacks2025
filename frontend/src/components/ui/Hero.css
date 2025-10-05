@@ -3,7 +3,6 @@
   min-height: 100vh;
   display: flex;
   align-items: center;
-  overflow: hidden;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding-top: 70px;
 }
@@ -40,7 +39,7 @@
 
 .hero-container {
   position: relative;
-  z-index: 2;
+  z-index: 10;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
@@ -148,19 +147,25 @@
   display: flex;
   gap: 1.5rem;
   flex-wrap: wrap;
+  margin-bottom: 3rem;
 }
 
 .stat-item {
   text-align: center;
   flex: 1;
-  min-width: 0;
+  min-width: 180px;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .stat-number {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 2.5rem;
+  font-weight: 700;
   color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0.5rem;
 }
 
 .stat-label {
@@ -248,6 +253,7 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   animation: bubbleFloat 3s ease-in-out infinite;
   min-width: 150px;
+  z-index: 5;
 }
 
 .bubble-content {
@@ -310,7 +316,7 @@
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .hero-content {
     grid-template-columns: 1fr;
     gap: 3rem;
@@ -323,6 +329,31 @@
 
   .hero-visual {
     order: -1;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.5rem;
+    max-width: 500px;
+    margin: 0 auto 3rem auto;
+    justify-content: center;
+  }
+
+  .stat-item {
+    width: 220px;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    justify-self: center;
+    padding: 1.25rem;
+  }
+
+  .stat-item:nth-child(3) {
+    grid-column: 1 / -1;
   }
 
   .bus-illustration {
@@ -373,8 +404,6 @@
   .hero-stats {
     justify-content: center;
     flex-direction: row;
-    gap: 1.5rem;
-    flex-wrap: wrap;
   }
 
   .bus-illustration {
@@ -399,7 +428,7 @@
   }
 
   .stat-number {
-    font-size: 2rem;
+    font-size: 1rem;
   }
 }
 
@@ -427,14 +456,21 @@
   }
 
   .hero-stats {
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
-    justify-content: center;
-    flex-direction: row;
-    flex-wrap: wrap;
+    align-items: center;
+    max-width: 300px;
+    margin: 0 auto 3rem auto;
+  }
+
+  .stat-item {
+    width: 100%;
+    max-width: 250px;
   }
 
   .stat-number {
-    font-size: 1.75rem;
+    font-size: 2rem;
   }
 
   .bus-illustration {

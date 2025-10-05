@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 70px;
+  height: var(--header-height);
 }
 
 .header-right {
@@ -37,11 +37,20 @@
   gap: 0.75rem;
   text-decoration: none;
   color: #1a1a1a;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
 }
 
 .bus-icon {
   font-size: 2rem;
-  animation: bounce 2s infinite;
+  transition: transform 0.3s ease;
+}
+
+.logo:hover .bus-icon {
+  animation: bounce 0.6s ease-in-out;
 }
 
 @keyframes bounce {
@@ -95,6 +104,11 @@
   font-size: 1rem;
   transition: all 0.3s ease;
   position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
 }
 
 .nav-link:hover {
@@ -133,11 +147,11 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  outline: none;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  opacity: 0.9;
 }
 
 .btn-secondary {
@@ -150,13 +164,11 @@
   font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  outline: none;
 }
 
 .btn-secondary:hover {
-  background: #667eea;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  opacity: 0.9;
 }
 
 .menu-toggle {
@@ -166,6 +178,7 @@
   cursor: pointer;
   padding: 0.5rem;
   z-index: 1001;
+  outline: none;
 }
 
 .hamburger {
@@ -209,7 +222,7 @@
 /* Mobile Navigation */
 .nav-mobile {
   position: fixed;
-  top: 70px;
+  top: var(--header-height);
   left: 0;
   right: 0;
   background: white;
@@ -247,6 +260,13 @@
   padding: 0.75rem 0;
   transition: color 0.3s ease;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+  text-align: left;
+  outline: none;
 }
 
 .mobile-nav-link:hover {
@@ -279,8 +299,7 @@
 }
 
 .btn-primary-mobile:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  opacity: 0.9;
 }
 
 .btn-secondary-mobile {
@@ -298,10 +317,7 @@
 }
 
 .btn-secondary-mobile:hover {
-  background: #667eea;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  opacity: 0.9;
 }
 
 /* Responsive Design */
