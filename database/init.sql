@@ -2,7 +2,8 @@ CREATE TABLE Users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(256) UNIQUE NOT NULL,
     password VARCHAR(256) NOT NULL,
-    Nickname VARCHAR(256) UNIQUE NOT NULL,
+    image_url VARCHAR(256),
+    Nickname VARCHAR(256),
     cumulativeScore INT
 );
 

@@ -58,8 +58,6 @@ def create_app():
 
         return jsonify({"msg": "Bad email or password"}), 401
 
-
-
     # Minimal OpenAPI 3.0 spec so Swagger UI can render
     @app.get('/swagger.json')
     def swagger_spec():
