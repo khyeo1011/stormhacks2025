@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 import psycopg2
 import psycopg2.extras
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from .auth.routes import get_db_connection
 
@@ -14,26 +14,27 @@ predictions_bp = Blueprint('predictions', __name__, url_prefix='/predictions')
 @jwt_required()
 def create_prediction():
     data = request.get_json()
-    trip_id_db = data.get('tripId')
+    gtfs_trip_id = data.get('tripId')
     predicted_outcome = data.get('predictedOutcome')
     user_id = get_jwt_identity()
 
-    if not all([trip_id_db, predicted_outcome]):
-        return jsonify({"error": "tripId and predictedOutcome are required"}), 400
+    if not all([gtfs_trip_id, predicted_outcome]):
+        return jsonify({"error": "tripId (GTFS) and predictedOutcome are required"}), 400
 
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
-        # Get trip name (GTFS trip_id) from the database
-        cur.execute('SELECT "name" FROM "trips" WHERE "id" = %s', (trip_id_db,))
+        # Get trip database ID from the trips table using the GTFS trip_id (name column)
+        cur.execute('SELECT "id", "name" FROM "trips" WHERE "name" = %s', (str(gtfs_trip_id),))
         trip = cur.fetchone()
         if not trip:
-            return jsonify({"error": "Trip not found"}), 404
-        trip_id_gtfs = int(trip['name'])
+            return jsonify({"error": "Trip not found in database"}), 404
+        trip_id_db = trip['id']
+        trip_id_gtfs_from_db = int(trip['name']) # Ensure it's an int for comparison with stop_times_df
 
         # Load stop_times.txt to check the first stop's arrival time
         stop_times_df = pd.read_csv('static_data/stop_times.txt')
-        trip_stops = stop_times_df[stop_times_df['trip_id'] == trip_id_gtfs]
+        trip_stops = stop_times_df[stop_times_df['trip_id'] == trip_id_gtfs_from_db]
         if trip_stops.empty:
             return jsonify({"error": "Could not find stop times for this trip"}), 404
         
@@ -41,10 +42,14 @@ def create_prediction():
         first_stop_arrival_time_str = first_stop['arrival_time']
 
         try:
-            arrival_time = datetime.strptime(first_stop_arrival_time_str, '%H:%M:%S').time()
-            now = datetime.now().time()
+            # Handle times > 23:59:59
+            h, m, s = map(int, first_stop_arrival_time_str.split(':'))
+            arrival_time_delta = timedelta(hours=h, minutes=m, seconds=s)
+            
+            now = datetime.now()
+            now_delta = timedelta(hours=now.hour, minutes=now.minute, seconds=now.second)
 
-            if now > arrival_time:
+            if now_delta > arrival_time_delta:
                 return jsonify({"error": "Cannot make a prediction for a trip that has already started"}), 403
         except ValueError:
             return jsonify({"error": "Could not parse arrival time for the trip"}), 500
@@ -70,7 +75,6 @@ def create_prediction():
         return jsonify({"error": "GTFS data not found"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 @predictions_bp.route('', methods=['GET'])
 @jwt_required()

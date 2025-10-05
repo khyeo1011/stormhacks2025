@@ -6,8 +6,7 @@ import psycopg2.extras
 import pandas as pd
 import argparse
 from datetime import datetime, timedelta
-from .auth.routes import get_db_connection
-
+import sys
 
 # --- Database Configuration ---
 DB_HOST = os.environ.get('POSTGRES_HOST', 'db')
@@ -26,6 +25,15 @@ BASE_URL = "http://localhost:8000"
 ADMIN_EMAIL = "admin@example.com"
 ADMIN_PASSWORD = "admin"
 
+
+def get_script_db_connection():
+    """Establishes a database connection for the script."""
+    return psycopg2.connect(
+        host=DB_HOST,
+        database=DB_NAME,
+        user=DB_USER,
+        password=DB_PASS
+    )
 
 def get_jwt_token():
     """Authenticates and returns a JWT token."""
@@ -46,10 +54,10 @@ def resolve_trips(force=False):
 
         # --- 1. Load static GTFS data ---
         print("Loading static GTFS data...")
-        stop_times_df = pd.read_csv('static_data/stop_times.txt')
+        stop_times_df = pd.read_csv('app/static_data/stop_times.txt')
 
         # --- 2. Get unresolved trips from the database ---
-        conn = get_db_connection()
+        conn = get_script_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute('SELECT "id", "name" FROM "trips" WHERE "outcome" IS NULL')
         unresolved_trips = cur.fetchall()
@@ -84,11 +92,13 @@ def resolve_trips(force=False):
             
             # Convert arrival time to datetime object
             try:
-                arrival_time = datetime.strptime(last_stop_arrival_time_str, '%H:%M:%S').time()
-                now = datetime.now().time()
+                h, m, s = map(int, last_stop_arrival_time_str.split(':'))
+                arrival_time_delta = timedelta(hours=h, minutes=m, seconds=s)
                 
-                # Check if it's time to resolve the trip
-                if not force and now < arrival_time:
+                now = datetime.now()
+                now_delta = timedelta(hours=now.hour, minutes=now.minute, seconds=now.second)
+
+                if not force and now_delta < arrival_time_delta:
                     print(f"Trip {trip_id_gtfs} has not ended yet. Skipping.")
                     continue
             except ValueError:
@@ -128,22 +138,31 @@ def resolve_trips(force=False):
         print(f"An error occurred: {e}")
 
 if __name__ == '__main__':
-    # Create a dummy admin user for the resolver to use
-    conn = get_db_connection()
-    cur = conn.cursor()
-    try:
-        # A more secure way to handle passwords should be used.
-        from werkzeug.security import generate_password_hash
-        hashed_password = generate_password_hash(ADMIN_PASSWORD)
-        cur.execute('INSERT INTO "users" ("email", "password", "nickname") VALUES (%s, %s, %s)', (ADMIN_EMAIL, hashed_password, "Admin"))
-        conn.commit()
-    except psycopg2.IntegrityError:
-        conn.rollback() # User already exists
-    finally:
-        cur.close()
-        conn.close()
+    from app.app import create_app
+    from app.auth.routes import get_db_connection
+    import time
+    app = create_app()
+    with app.app_context():
+        # Create a dummy admin user for the resolver to use
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            # A more secure way to handle passwords should be used.
+            from werkzeug.security import generate_password_hash
+            hashed_password = generate_password_hash(ADMIN_PASSWORD)
+            cur.execute('INSERT INTO "users" ("email", "password", "nickname") VALUES (%s, %s, %s)', (ADMIN_EMAIL, hashed_password, "Admin"))
+            conn.commit()
+        except psycopg2.IntegrityError:
+            conn.rollback() # User already exists
+        finally:
+            cur.close()
 
-    parser = argparse.ArgumentParser(description='Resolve trip predictions.')
-    parser.add_argument('--force', action='store_true', help='Force resolve all unresolved trips.')
-    args = parser.parse_args()
-    resolve_trips(force=args.force)
+        parser = argparse.ArgumentParser(description='Resolve trip predictions.')
+        parser.add_argument('--force', action='store_true', help='Force resolve all unresolved trips.')
+        args = parser.parse_args()
+        
+        while True:
+            print("Running resolver...")
+            resolve_trips(force=args.force)
+            print("Resolver finished. Waiting 60 seconds...")
+            time.sleep(60)

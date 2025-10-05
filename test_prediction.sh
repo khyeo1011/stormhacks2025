@@ -118,7 +118,7 @@ echo "   - Prediction created: $PREDICTION_RESPONSE"
 
 # 7. Run the resolver
 echo "7. Running the resolver script..."
-docker-compose run --rm backend python app/resolver.py --force
+docker-compose run --rm backend python -m app.resolver --force
 
 # 8. Check the user's score
 echo "8. Checking user's score..."
