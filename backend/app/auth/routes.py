@@ -216,7 +216,7 @@ def get_friends():
     userId = get_jwt_identity()
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('SELECT f."friendId", u."nickname", u."email", u."cumulative_score" FROM "friends" f JOIN "users" u ON f."friendId" = u."id" WHERE f."userId" = %s', (userId,))
+    cur.execute('SELECT f."friend_id", u."nickname", u."email", u."cumulative_score" FROM "friends" f JOIN "users" u ON f."friendId" = u."id" WHERE f."userId" = %s', (userId,))
     friends = [{"id": row[0], "nickname": row[1], "email": row[2], "cumulative_score": row[3]} for row in cur.fetchall()]
     cur.close()
     return jsonify(friends)
