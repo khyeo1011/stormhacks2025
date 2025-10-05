@@ -37,9 +37,9 @@
             <hr style="visibility: hidden;">
             <label style=" color: white; margin-left:-120px"id="un"for="username">Name:</label><br>
             <input minlength="6" style="border-radius: 20px; padding: 10px; border: 1px solid grey; outline: none;" value="" placeholder="Your Name" type="text" id="username" name="username" autocomplete="username"><br>
-            <label style="color: white; margin-left:-123px" id="pw"for="password">Email:</label><br>
-            <input style= "border-radius: 20px; border: 1px solid grey; outline: none; padding: 10px" required="" type="email" id="password" placeholder="Your_Email@gmail.com" name="password" value="">
-            <div id="div" style="text-align: center; color:red; display: none;">Email Cannot be Empty</div>
+            <label style="color: white; margin-left:-123px" id="pw"for="password">Password:</label><br>
+            <input style= "border-radius: 20px; border: 1px solid grey; outline: none; padding: 10px" required="" type="password" id="password" placeholder="Your Password" name="password" value="">
+            <div id="div" style="text-align: center; color:red; display: none;">Password Cannot be Empty</div>
             <div id="pass" style="margin-left:-2px; color:red; display: none;">Username is Too Short!</div>
         </form>
         <div id="p" style="text-align: center; color:red; font-size: 1rem; display: none;">Please Enter your name</div>
@@ -60,6 +60,7 @@
         background-color: black;
         margin-left: 46em;
         margin-top: -14em;
+        max-width: 600px;
         border-radius: 2em;
       }
       #animated-csss{
@@ -70,18 +71,7 @@
         justify-content: center;
         padding: 50px;
     }
-      /* #fancybox {
-        margin: 50px auto;
-        height: 23em;
-        width: 34em;
-        padding: 20px;
-        background: rgba(156, 42, 42, 0.618);
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        display: block;
-        z-index: 1;
-        position: absolute;
-    } */
+
       #image{
         margin-left: 57em;
       }
@@ -142,6 +132,16 @@
       background-image: linear-gradient(90deg, rgba(255, 29, 29, 0.473), rgba(0, 0, 0, 0.473));
       color: white;
     }
+    @media screen and (max-width: 600px) {
+      #fancybox {
+          margin-left: -1em !important;
+          margin-top: -15em !important;
+      }
+      #start-button {
+        margin-left: 12em !important;
+        margin-top: 41em !important;
+      }
+    }
     </style>
     <!--
       This HTML file is a template.
@@ -154,4 +154,42 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
+  <script>
+    const form = document.getElementById("forms");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById("username").value.trim();
+      const email = document.getElementById("password").value.trim(); // assuming this is your "email" field
+
+      if (username.length < 6) {
+        alert("Username too short");
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:8000/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password: email, // Or get from a real password field
+            nickname: username,
+            cumulativeScore: 0
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert("User created successfully with ID: " + data.id);
+          window.location.replace("copied.html");
+        } else {
+          alert(data.error || "Error creating user");
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+      }
+    });
+  </script>
 </html>
