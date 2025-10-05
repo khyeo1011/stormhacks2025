@@ -116,7 +116,7 @@ const Dashboard: React.FC = () => {
 
     try {
       setMakingPrediction(true);
-      const response = await makeAuthenticatedRequest('http://localhost:8000/simple-predictions', {
+      const response = await makeAuthenticatedRequest('http://localhost:8000/spredictions', {
         method: 'POST',
         body: JSON.stringify({
           trip_id: selectedTrip.trip_id,
