@@ -86,8 +86,7 @@ def create_app():
         return jsonify(leaderboard)
 
 
-    with app.app_context():
-        populate_trips_from_static_data()
+
         
     @app.get('/swagger.json')
     def swagger_spec():
@@ -100,7 +99,8 @@ def create_app():
     app.register_blueprint(trips_bp)
     app.register_blueprint(predictions_bp)
     app.register_blueprint(routes_data_bp)
-
+    with app.app_context():
+        populate_trips_from_static_data()
     return app
 
 if __name__ == '__main__':
