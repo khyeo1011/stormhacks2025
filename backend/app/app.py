@@ -5,6 +5,8 @@ from flask_swagger_ui import get_swaggerui_blueprint
 import psycopg2
 from werkzeug.security import generate_password_hash
 
+from .auth.routes import  auth_bp
+
 # URL for exposing Swagger UI (without trailing '/')
 SWAGGER_URL = '/api/docs'
 # This must point to a valid OpenAPI/Swagger JSON definition
@@ -41,40 +43,9 @@ def create_app():
     def hello():
         return "Hello from Flask!"
 
-    @app.route('/users', methods=['GET'])
-    def get_users():
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute('SELECT id, email, nickname, cumulativeScore FROM users;')
-        users = cur.fetchall()
-        cur.close()
-        return jsonify(users)
 
-    @app.route('/users', methods=['POST'])
-    def add_user():
-        data = request.get_json()
-        email = data['email']
-        password = data['password']
-        nickname = data.get('nickname')
-        cumulativeScore = data.get('cumulativeScore', 0)
 
-        hashed_password = generate_password_hash(password)
 
-        conn = get_db_connection()
-        cur = conn.cursor()
-        try:
-            cur.execute(
-                'INSERT INTO Users (email, password, nickname, cumulativeScore) VALUES (%s, %s, %s, %s) RETURNING id',
-                (email, hashed_password, nickname, cumulativeScore)
-            )
-            user_id = cur.fetchone()[0]
-            conn.commit()
-            cur.close()
-            return jsonify({'id': user_id}), 201
-        except psycopg2.IntegrityError:
-            conn.rollback()
-            cur.close()
-            return jsonify({'error': 'email already exists'}), 409
 
     # Minimal OpenAPI 3.0 spec so Swagger UI can render
     @app.get('/swagger.json')
@@ -175,6 +146,7 @@ def create_app():
         return jsonify(spec)
 
     app.register_blueprint(blueprint)
+    app.register_blueprint(auth_bp)
 
     return app
 
