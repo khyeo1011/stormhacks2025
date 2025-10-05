@@ -106,7 +106,7 @@ def login():
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('SELECT "id", "password" FROM "users" WHERE "email" = %s;', (email,))
+    cur.execute('SELECT "id", "password_hash" FROM "users" WHERE "email" = %s;', (email,))
     user = cur.fetchone()
     cur.close()
 
