@@ -149,7 +149,12 @@ ul a:hover {
   transition: .5s ease all;
 }
 #frlist.popup{
-  background-color: red;
+  background-color: rgba(91, 76, 76, 0.51);
+  transition: all .5s ease-in;
+  height: 19em;
+  margin-top: 6em;
+  margin-left: 103em;
+  width: 20em;
 }
 /* @keyframes fade{
     0% {opacity: 1; -webkit-background-clip: text;background-color: rgb(227, 134, 134)}
