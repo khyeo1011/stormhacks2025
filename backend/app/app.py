@@ -6,6 +6,8 @@ from flask_swagger_ui import get_swaggerui_blueprint
 import psycopg2
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from .auth.routes import  auth_bp
+
 # URL for exposing Swagger UI (without trailing '/')
 SWAGGER_URL = '/api/docs'
 # This must point to a valid OpenAPI/Swagger JSON definition
@@ -291,6 +293,7 @@ def create_app():
         return jsonify(spec)
 
     app.register_blueprint(blueprint)
+    app.register_blueprint(auth_bp)
 
     return app
 
