@@ -8,7 +8,7 @@ interface UserData {
   id: number;
   email: string;
   nickname: string;
-  cumulativeScore: number;
+  cumulative_score: number;
   createdAt: string;
 }
 
@@ -91,7 +91,6 @@ const Dashboard: React.FC = () => {
         const userData = await userResponse.json();
         setUserData(userData);
       }
-
       if (tripsResponse.ok) {
         const tripsData = await tripsResponse.json();
         // Filter trips that haven't started yet
@@ -116,17 +115,6 @@ const Dashboard: React.FC = () => {
       if (predictionsResponse.ok) {
         const predictionsData = await predictionsResponse.json();
         setPredictions(predictionsData);
-        
-        // Calculate stats from predictions data
-        const totalPredictions = predictionsData.length;
-        
-        // Update user data with stats if available
-        if (userData) {
-          setUserData({
-            ...userData,
-            cumulativeScore: totalPredictions * 10 // Simple scoring: 10 points per prediction
-          });
-        }
       }
 
       if (predictionHistoryResponse.ok) {
@@ -282,7 +270,7 @@ const Dashboard: React.FC = () => {
           <div className="stat-card primary">
             <div className="stat-icon">🎯</div>
             <div className="stat-content">
-              <div className="stat-value">{userData?.cumulativeScore || 0}</div>
+              <div className="stat-value">{userData?.cumulative_score || 0}</div>
               <div className="stat-label">Total Score</div>
             </div>
           </div>
