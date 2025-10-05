@@ -34,6 +34,8 @@ CREATE TABLE "friendRequests" (
 CREATE TABLE "trips" (
     "id" SERIAL PRIMARY KEY,
     "name" VARCHAR(255) NOT NULL,
+    "route_id" INT,
+    "headsign" VARCHAR(255),
     "description" TEXT,
     "outcome" VARCHAR(255),
     "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

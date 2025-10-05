@@ -1,40 +1,47 @@
 import os
 from flask import Blueprint, jsonify
 import pandas as pd
+from .auth.routes import get_db_connection
+import psycopg2.extras
 
 routes_data_bp = Blueprint('routes_data', __name__, url_prefix='/routes')
 
 @routes_data_bp.route('/<int:route_id>/trips', methods=['GET'])
 def get_route_trips(route_id):
     try:
-        # Load GTFS data
-        trips_df = pd.read_csv('static_data/trips.txt')
+        # Load GTFS data for route name
         routes_df = pd.read_csv('static_data/routes.txt')
-        stop_times_df = pd.read_csv('static_data/stop_times.txt')
-
-        # Convert route_id to numeric
-        trips_df['route_id'] = pd.to_numeric(trips_df['route_id'], errors='coerce')
         routes_df['route_id'] = pd.to_numeric(routes_df['route_id'], errors='coerce')
-
-        # Get route name
         route_info = routes_df[routes_df['route_id'] == route_id]
         if route_info.empty:
             return jsonify({"error": "Route not found"}), 404
-        route_name = route_info.iloc[0]['route_long_name']
+        route_short_name = route_info.iloc[0].get('route_short_name', '')
+        route_long_name = route_info.iloc[0].get('route_long_name', '')
+        route_name = f"{route_short_name} {route_long_name}".strip()
 
-        # Get trips for the route
-        route_trips = trips_df[trips_df['route_id'] == route_id]
-        trip_ids = route_trips['trip_id'].unique()
+        # Get trips from the database
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur.execute('SELECT "name", "headsign" FROM "trips" WHERE "route_id" = %s', (route_id,))
+        trips = cur.fetchall()
+        cur.close()
+        conn.close()
 
-        if len(trip_ids) == 0:
+        if not trips:
             return jsonify({"trips": [], "route_name": route_name})
 
+        trip_ids = [trip['name'] for trip in trips]
         # Get stop times for the trips
-        trip_stop_times = stop_times_df[stop_times_df['trip_id'].isin(trip_ids)]
+        stop_times_df = pd.read_csv('static_data/stop_times.txt')
+        # The trip_id in stop_times.txt might be integer, but in our db it is string.
+        # Let's convert trip_ids from db to int for comparison
+        trip_ids_int = [int(tid) for tid in trip_ids]
+        trip_stop_times = stop_times_df[stop_times_df['trip_id'].isin(trip_ids_int)]
 
         # Format the response
         trips_data = []
-        for trip_id in trip_ids:
+        for trip in trips:
+            trip_id = int(trip['name'])
             trip_stops = trip_stop_times[trip_stop_times['trip_id'] == trip_id].sort_values(by='stop_sequence')
             if not trip_stops.empty:
                 first_stop = trip_stops.iloc[0].to_dict()
@@ -44,7 +51,8 @@ def get_route_trips(route_id):
                 stops = []
             
             trips_data.append({
-                "trip_id": int(trip_id),
+                "trip_id": trip_id,
+                "headsign": trip['headsign'],
                 "stop_times": stops
             })
 

@@ -10,6 +10,49 @@
     "http"
   ],
   "paths": {
+    "/leaderboard": {
+      "get": {
+        "summary": "Get leaderboard",
+        "description": "Returns the top 10 users by cumulative score.",
+        "responses": {
+          "200": {
+            "description": "A list of users on the leaderboard",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LeaderboardUser"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/routes/{route_id}/trips": {
+      "get": {
+        "summary": "Get trips for a specific route",
+        "description": "Returns a list of trips for a given route, including first and last stop times.",
+        "parameters": [
+          {
+            "name": "route_id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "The ID of the route to retrieve trips for."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of trips for the route",
+            "schema": {
+              "$ref": "#/definitions/RouteTrips"
+            }
+          },
+          "404": {
+            "description": "Route not found"
+          }
+        }
+      }
+    },
     "/auth/register": {
       "post": {
         "summary": "Register a new user",
@@ -223,7 +266,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Trip"
+                "$ref": "#/definitions/TripSummary"
               }
             }
           }
@@ -293,8 +336,8 @@
               "type": "object",
               "properties": {
                 "tripId": {
-                  "type": "integer",
-                  "example": 12345
+                  "type": "string",
+                  "example": "12345"
                 },
                 "predictedOutcome": {
                   "type": "string",
@@ -325,6 +368,51 @@
     }
   },
   "definitions": {
+    "LeaderboardUser": {
+      "type": "object",
+      "properties": {
+        "nickname": {
+          "type": "string"
+        },
+        "cumulativeScore": {
+          "type": "integer"
+        }
+      }
+    },
+    "RouteTrips": {
+      "type": "object",
+      "properties": {
+        "route_id": {
+          "type": "integer"
+        },
+        "route_name": {
+          "type": "string"
+        },
+        "trips": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TripStopTime"
+          }
+        }
+      }
+    },
+    "TripStopTime": {
+      "type": "object",
+      "properties": {
+        "trip_id": {
+          "type": "integer"
+        },
+        "headsign": {
+          "type": "string"
+        },
+        "stop_times": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
     "UserRegistration": {
       "type": "object",
       "properties": {
@@ -387,9 +475,12 @@
         "id": {
           "type": "integer"
         },
-        "trip_id": {
+        "name": {
           "type": "string",
           "description": "The name/identifier from the GTFS static data."
+        },
+        "route_id": {
+          "type": "integer"
         },
         "description": {
           "type": "string"
@@ -400,6 +491,23 @@
         "createdAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "TripSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "trip_id": {
+          "type": "string"
+        },
+        "first_stop": {
+          "type": "string"
+        },
+        "last_stop": {
+          "type": "string"
         }
       }
     },
@@ -427,7 +535,7 @@
       "type": "apiKey",
       "name": "Authorization",
       "in": "header",
-      "description": "JWT Authorization header using the Bearer scheme. Example: \\\"Authorization: Bearer {token}\\\""
+      "description": "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
     }
   }
 }
