@@ -95,3 +95,50 @@ def get_predictions():
     finally:
         cur.close()
         conn.close()
+
+@predictions_bp.route('/history', methods=['GET'])
+@jwt_required()
+def get_prediction_history():
+    """Get predictions with their outcomes (correct/incorrect)"""
+    user_id = get_jwt_identity()
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    try:
+        # Join predictions with trips to get actual outcomes
+        cur.execute('''
+            SELECT 
+                p.id,
+                p.trip_id,
+                p.service_date,
+                p.predicted_outcome,
+                p.created_at,
+                t.outcome as actual_outcome,
+                t.trip_headsign,
+                CASE 
+                    WHEN t.outcome IS NULL THEN NULL
+                    WHEN p.predicted_outcome = t.outcome THEN 'correct'
+                    ELSE 'incorrect'
+                END as prediction_result
+            FROM predictions p
+            LEFT JOIN trips t ON p.trip_id = t.trip_id AND p.service_date = t.service_date
+            WHERE p.user_id = %s 
+            ORDER BY p.created_at DESC
+        ''', (user_id,))
+        
+        predictions = [dict(row) for row in cur.fetchall()]
+        
+        # Convert service_date to string for JSON serialization
+        for p in predictions:
+            if 'service_date' in p and hasattr(p['service_date'], 'isoformat'):
+                p['service_date'] = p['service_date'].isoformat()
+        
+        return jsonify(predictions)
+        
+    except psycopg2.Error as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+    finally:
+        cur.close()
+        conn.close()
