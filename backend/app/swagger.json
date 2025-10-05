@@ -27,32 +27,6 @@
         }
       }
     },
-    "/routes/{route_id}/trips": {
-      "get": {
-        "summary": "Get trips for a specific route",
-        "description": "Returns a list of trips for a given route, including first and last stop times.",
-        "parameters": [
-          {
-            "name": "route_id",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "description": "The ID of the route to retrieve trips for."
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A list of trips for the route",
-            "schema": {
-              "$ref": "#/definitions/RouteTrips"
-            }
-          },
-          "404": {
-            "description": "Route not found"
-          }
-        }
-      }
-    },
     "/auth/register": {
       "post": {
         "summary": "Register a new user",
@@ -148,7 +122,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "receiverId": {
+                "receiver_id": {
                   "type": "integer"
                 }
               }
@@ -207,7 +181,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "senderId": {
+                "sender_id": {
                   "type": "integer"
                 },
                 "action": {
@@ -282,7 +256,7 @@
             "name": "trip_id",
             "in": "path",
             "required": true,
-            "type": "integer"
+            "type": "string"
           }
         ],
         "responses": {
@@ -335,11 +309,11 @@
             "schema": {
               "type": "object",
               "properties": {
-                "tripId": {
+                "trip_id": {
                   "type": "string",
                   "example": "12345"
                 },
-                "predictedOutcome": {
+                "predicted_outcome": {
                   "type": "string",
                   "example": "early"
                 }
@@ -374,42 +348,8 @@
         "nickname": {
           "type": "string"
         },
-        "cumulativeScore": {
+        "cumulative_score": {
           "type": "integer"
-        }
-      }
-    },
-    "RouteTrips": {
-      "type": "object",
-      "properties": {
-        "route_id": {
-          "type": "integer"
-        },
-        "route_name": {
-          "type": "string"
-        },
-        "trips": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/TripStopTime"
-          }
-        }
-      }
-    },
-    "TripStopTime": {
-      "type": "object",
-      "properties": {
-        "trip_id": {
-          "type": "integer"
-        },
-        "headsign": {
-          "type": "string"
-        },
-        "stop_times": {
-          "type": "array",
-          "items": {
-            "type": "object"
-          }
         }
       }
     },
@@ -450,7 +390,7 @@
         "email": {
           "type": "string"
         },
-        "cumulativeScore": {
+        "cumulative_score": {
           "type": "integer"
         }
       }
@@ -458,7 +398,7 @@
     "FriendRequest": {
       "type": "object",
       "properties": {
-        "senderId": {
+        "sender_id": {
           "type": "integer"
         },
         "nickname": {
@@ -472,35 +412,45 @@
     "Trip": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "integer"
-        },
-        "name": {
-          "type": "string",
-          "description": "The name/identifier from the GTFS static data."
+        "trip_id": {
+          "type": "string"
         },
         "route_id": {
+          "type": "string"
+        },
+        "service_id": {
+          "type": "string"
+        },
+        "trip_headsign": {
+          "type": "string"
+        },
+        "direction_id": {
           "type": "integer"
         },
-        "description": {
+        "shape_id": {
           "type": "string"
-        },
-        "outcome": {
-          "type": "string"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
         }
       }
     },
     "TripSummary": {
       "type": "object",
       "properties": {
-        "id": {
+        "trip_id": {
+          "type": "string"
+        },
+        "route_id": {
+          "type": "string"
+        },
+        "service_id": {
+          "type": "string"
+        },
+        "trip_headsign": {
+          "type": "string"
+        },
+        "direction_id": {
           "type": "integer"
         },
-        "trip_id": {
+        "shape_id": {
           "type": "string"
         },
         "first_stop": {
@@ -517,13 +467,13 @@
         "id": {
           "type": "integer"
         },
-        "tripId": {
-          "type": "integer"
-        },
-        "predictedOutcome": {
+        "trip_id": {
           "type": "string"
         },
-        "createdAt": {
+        "predicted_outcome": {
+          "type": "string"
+        },
+        "created_at": {
           "type": "string",
           "format": "date-time"
         }

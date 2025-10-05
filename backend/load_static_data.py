@@ -1,4 +1,3 @@
-
 import pandas as pd
 from sqlalchemy import create_engine
 import os
@@ -23,6 +22,23 @@ calendar_df = pd.read_csv(static_data_path + 'calendar.txt', dtype={'service_id'
 trips_df = pd.read_csv(static_data_path + 'trips.txt', dtype={'trip_id': str, 'route_id': str, 'service_id': str, 'shape_id': str})
 stop_times_df = pd.read_csv(static_data_path + 'stop_times.txt', dtype={'trip_id': str, 'stop_id': str})
 
+# --- Data Pruning ---
+route_id_to_keep = '37807'
+
+routes_df = routes_df[routes_df['route_id'] == route_id_to_keep]
+
+trips_df = trips_df[trips_df['route_id'] == route_id_to_keep]
+
+valid_trip_ids = trips_df['trip_id'].unique()
+stop_times_df = stop_times_df[stop_times_df['trip_id'].isin(valid_trip_ids)]
+
+valid_stop_ids = stop_times_df['stop_id'].unique()
+stops_df = stops_df[stops_df['stop_id'].isin(valid_stop_ids)]
+
+valid_service_ids = trips_df['service_id'].unique()
+calendar_df = calendar_df[calendar_df['service_id'].isin(valid_service_ids)]
+# --- End Data Pruning ---
+
 # Select and rename columns to match the database schema
 stops_df = stops_df[['stop_id', 'stop_name', 'stop_lat', 'stop_lon']]
 routes_df = routes_df[['route_id', 'route_short_name', 'route_long_name']]
@@ -32,10 +48,15 @@ stop_times_df = stop_times_df[['trip_id', 'arrival_time', 'departure_time', 'sto
 
 
 # Write DataFrames to the database
-stops_df.to_sql('stops', engine, if_exists='append', index=False)
-routes_df.to_sql('routes', engine, if_exists='append', index=False)
-calendar_df.to_sql('calendar', engine, if_exists='append', index=False)
-trips_df.to_sql('trips', engine, if_exists='append', index=False)
-stop_times_df.to_sql('stop_times', engine, if_exists='append', index=False)
+print(f"Loading {len(stops_df)} stops...")
+stops_df.to_sql('stops', engine, if_exists='replace', index=False)
+print(f"Loading {len(routes_df)} routes...")
+routes_df.to_sql('routes', engine, if_exists='replace', index=False)
+print(f"Loading {len(calendar_df)} calendar entries...")
+calendar_df.to_sql('calendar', engine, if_exists='replace', index=False)
+print(f"Loading {len(trips_df)} trips...")
+trips_df.to_sql('trips', engine, if_exists='replace', index=False)
+print(f"Loading {len(stop_times_df)} stop times...")
+stop_times_df.to_sql('stop_times', engine, if_exists='replace', index=False)
 
 print("Data loaded successfully into the database.")

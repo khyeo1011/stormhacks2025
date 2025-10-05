@@ -8,5 +8,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app
 
-CMD ["python", "-m", "flask", "--debug", "run", "--host=0.0.0.0", "--port=8000"]  
+RUN chmod +x /app/entrypoint.sh
+
 ENV FLASK_APP=app:create_app
+
+CMD ["/app/entrypoint.sh"]
