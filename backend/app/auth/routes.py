@@ -52,7 +52,7 @@ import psycopg2.extras
 def get_users():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cur.execute('SELECT "id", "email", "nickname", "cumulativeScore" FROM "users";')
+    cur.execute('SELECT "id", "email", "nickname", "cumulative_score" FROM "users";')
     users = [dict(row) for row in cur.fetchall()]
     cur.close()
     return jsonify(users)
@@ -81,7 +81,7 @@ def add_user():
         cur = conn.cursor()
         try:
             cur.execute(
-                'INSERT INTO "users" ("email", "password", "nickname", "cumulativeScore") VALUES (%s, %s, %s, %s) RETURNING "id"',
+                'INSERT INTO "users" ("email", "password_hash", "nickname", "cumulative_score") VALUES (%s, %s, %s, %s) RETURNING "id"',
                 (email, hashed_password, nickname, cumulativeScore)
             )
             user_id = cur.fetchone()[0]
@@ -121,7 +121,7 @@ def login():
 @jwt_required()
 def send_friend_request():
     senderId = get_jwt_identity()
-    receiverId = request.json.get('receiverId')
+    receiverId = request.json.get('receiver_id')
 
     if not receiverId:
         return jsonify({"error": "receiverId is required"}), 400
@@ -132,16 +132,16 @@ def send_friend_request():
     cur = conn.cursor()
     try:
         # Check if a request already exists or if they are already friends
-        cur.execute('SELECT 1 FROM "friendRequests" WHERE ("senderId" = %s AND "receiverId" = %s) OR ("senderId" = %s AND "receiverId" = %s)', (senderId, receiverId, receiverId, senderId))
+        cur.execute('SELECT 1 FROM "friend_requests" WHERE ("sender_id" = %s AND "receiver_id" = %s) OR ("sender_id" = %s AND "receiver_id" = %s)', (senderId, receiverId, receiverId, senderId))
         if cur.fetchone():
             return jsonify({"error": "Friend request already sent or received"}), 409
         
-        cur.execute('SELECT 1 FROM "friends" WHERE "userId" = %s AND "friendId" = %s', (senderId, receiverId))
+        cur.execute('SELECT 1 FROM "friends" WHERE "user_id" = %s AND "friend_id" = %s', (senderId, receiverId))
         if cur.fetchone():
             return jsonify({"error": "Users are already friends"}), 409
 
         cur.execute(
-            'INSERT INTO "friendRequests" ("senderId", "receiverId", "status") VALUES (%s, %s, %s)',
+            'INSERT INTO "friend_requests" ("sender_id", "receiver_id", "status") VALUES (%s, %s, %s)',
             (senderId, receiverId, 'pending')
         )
         conn.commit()
@@ -158,8 +158,8 @@ def get_pending_requests():
     userId = get_jwt_identity()
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('SELECT fr."senderId", u."nickname", u."email" FROM "friendRequests" fr JOIN "users" u ON fr."senderId" = u."id" WHERE fr."receiverId" = %s AND fr."status" = %s', (userId, 'pending'))
-    requests = [{"senderId": row[0], "nickname": row[1], "email": row[2]} for row in cur.fetchall()]
+    cur.execute('SELECT fr."sender_id", u."nickname", u."email" FROM "friend_requests" fr JOIN "users" u ON fr."senderId" = u."id" WHERE fr."receiverId" = %s AND fr."status" = %s', (userId, 'pending'))
+    requests = [{"sender_id": row[0], "nickname": row[1], "email": row[2]} for row in cur.fetchall()]
     cur.close()
     return jsonify(requests)
 
@@ -167,7 +167,7 @@ def get_pending_requests():
 @jwt_required()
 def handle_friend_request():
     receiverId = get_jwt_identity()
-    senderId = request.json.get('senderId')
+    senderId = request.json.get('sender_id')
     action = request.json.get('action') # 'accept' or 'reject'
 
     if not all([senderId, action in ['accept', 'reject']]):
@@ -177,15 +177,15 @@ def handle_friend_request():
     cur = conn.cursor()
     try:
         # Delete the request regardless of action
-        cur.execute('DELETE FROM "friendRequests" WHERE "senderId" = %s AND "receiverId" = %s RETURNING "status"', (senderId, receiverId))
+        cur.execute('DELETE FROM "friend_requests" WHERE "sender_id" = %s AND "receiver_id" = %s RETURNING "status"', (senderId, receiverId))
         request_exists = cur.fetchone()
         if not request_exists:
             return jsonify({"error": "Friend request not found"}), 404
 
         if action == 'accept':
             # Add friendship in both directions
-            cur.execute('INSERT INTO "friends" ("userId", "friendId") VALUES (%s, %s)', (receiverId, senderId))
-            cur.execute('INSERT INTO "friends" ("userId", "friendId") VALUES (%s, %s)', (senderId, receiverId))
+            cur.execute('INSERT INTO "friends" ("user_id", "friend_id") VALUES (%s, %s)', (receiverId, senderId))
+            cur.execute('INSERT INTO "friends" ("user_id", "friend_id") VALUES (%s, %s)', (senderId, receiverId))
         
         conn.commit()
         cur.close()
@@ -216,7 +216,7 @@ def get_friends():
     userId = get_jwt_identity()
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('SELECT f."friendId", u."nickname", u."email", u."cumulativeScore" FROM "friends" f JOIN "users" u ON f."friendId" = u."id" WHERE f."userId" = %s', (userId,))
-    friends = [{"id": row[0], "nickname": row[1], "email": row[2], "cumulativeScore": row[3]} for row in cur.fetchall()]
+    cur.execute('SELECT f."friendId", u."nickname", u."email", u."cumulative_score" FROM "friends" f JOIN "users" u ON f."friendId" = u."id" WHERE f."userId" = %s', (userId,))
+    friends = [{"id": row[0], "nickname": row[1], "email": row[2], "cumulative_score": row[3]} for row in cur.fetchall()]
     cur.close()
     return jsonify(friends)
