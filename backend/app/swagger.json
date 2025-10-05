@@ -458,12 +458,6 @@
         },
         "last_stop": {
           "type": "string"
-        },
-        "first_stop_arrival_time": {
-          "type": "string"
-        },
-        "last_stop_arrival_time": {
-          "type": "string"
         }
       }
     },

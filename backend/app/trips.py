@@ -42,11 +42,10 @@ def load_data_from_db():
         first_stops = pd.merge(first_stops, stops_df, on='stop_id', how='left')
         last_stops = pd.merge(last_stops, stops_df, on='stop_id', how='left')
 
-        trips_with_stops = pd.merge(trips_df, first_stops[['trip_id', 'stop_name', 'arrival_time']], on='trip_id', how='left')
-        trips_with_stops.rename(columns={'stop_name': 'first_stop', 'arrival_time': 'first_stop_arrival_time'}, inplace=True)
-        
-        trips_with_stops_df = pd.merge(trips_with_stops, last_stops[['trip_id', 'stop_name', 'arrival_time']], on='trip_id', how='left')
-        trips_with_stops_df.rename(columns={'stop_name': 'last_stop', 'arrival_time': 'last_stop_arrival_time'}, inplace=True)
+        trips_with_stops = pd.merge(trips_df, first_stops[['trip_id', 'stop_name']], on='trip_id', how='left')
+        trips_with_stops.rename(columns={'stop_name': 'first_stop'}, inplace=True)
+        trips_with_stops_df = pd.merge(trips_with_stops, last_stops[['trip_id', 'stop_name']], on='trip_id', how='left')
+        trips_with_stops_df.rename(columns={'stop_name': 'last_stop'}, inplace=True)
 
         print("Successfully pre-calculated trips with stops.")
 
