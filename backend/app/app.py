@@ -1,3 +1,4 @@
+
 import os
 from flask import Flask, jsonify, g, current_app
 from flask_jwt_extended import JWTManager
@@ -7,9 +8,8 @@ import psycopg2
 from flask_cors import CORS
 
 from .auth.routes import auth_bp, get_db_connection
-from .trips import trips_bp, populate_trips_from_static_data
+from .trips import trips_bp, load_data_from_db
 from .predictions import predictions_bp
-from .routes_data import routes_data_bp
 
 # URL for exposing Swagger UI (without trailing '/')
 SWAGGER_URL = '/api/docs'
@@ -23,7 +23,6 @@ blueprint = get_swaggerui_blueprint(
         'app_name': "Test application"
     },
 )
-
 
 def create_app():
     app = Flask(__name__)
@@ -76,10 +75,10 @@ def create_app():
         conn = get_db_connection()
         try:
             with conn.cursor() as cur:
-                cur.execute('SELECT nickname, "cumulativeScore" FROM users ORDER BY "cumulativeScore" DESC LIMIT 10;')
+                cur.execute('SELECT nickname, cumulative_score FROM users ORDER BY cumulative_score DESC LIMIT 10;')
                 leaderboard = cur.fetchall()
                 # The result from fetchall is a list of tuples. Convert to a list of dicts for proper JSON.
-                leaderboard_json = [{"nickname": row[0], "cumulativeScore": row[1]} for row in leaderboard]
+                leaderboard_json = [{"nickname": row[0], "cumulative_score": row[1]} for row in leaderboard]
                 return jsonify(leaderboard_json)
         finally:
             conn.close()
@@ -96,10 +95,9 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(trips_bp)
     app.register_blueprint(predictions_bp)
-    app.register_blueprint(routes_data_bp)
 
     with app.app_context():
-        populate_trips_from_static_data()
+        load_data_from_db()
 
     return app
 
