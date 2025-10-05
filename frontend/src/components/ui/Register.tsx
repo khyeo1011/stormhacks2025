@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import './Register.css';
 
 const Register: React.FC = () => {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
