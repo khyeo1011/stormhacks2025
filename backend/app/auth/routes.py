@@ -44,20 +44,22 @@ def get_db_connection():
         )
     return g.db
 
+import psycopg2.extras
+
 @auth_bp.route('/users', methods=['GET'])
 def get_users():
     conn = get_db_connection()
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute('SELECT "id", "email", "nickname", "cumulativeScore" FROM "users";')
-    users = cur.fetchall()
+    users = [dict(row) for row in cur.fetchall()]
     cur.close()
     return jsonify(users)
 
 
 @auth_bp.route('/register', methods=['POST'])
 def add_user():
-    data = request.form.to_dict()
-    # data = request.get_json()
+    data = request.get_json()
+
     email = data['email']
     password = data['password']
     nickname = data.get('nickname')
