@@ -83,18 +83,6 @@ stop_times_df_expanded = pd.merge(stop_times_df, trips_df_expanded[['trip_id', '
 
 # --- End Expand trips and stop_times with service_date ---
 
-with engine.connect() as connection:
-    connection.execute(text("DROP TABLE IF EXISTS stop_times CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS trips CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS stops CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS routes CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS calendar CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS predictions CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS friends CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS friend_requests CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS users CASCADE"))
-    connection.commit()
-
 # Write DataFrames to the database
 print(f"Loading {len(stops_df)} stops...")
 stops_df.to_sql('stops', engine, if_exists='append', index=False)

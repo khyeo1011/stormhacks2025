@@ -1,20 +1,6 @@
 -- init.sql
 
 -- Drop existing tables to ensure a clean slate on re-initialization
-DROP TABLE IF EXISTS stop_times CASCADE;
-DROP TABLE IF EXISTS trips CASCADE;
-DROP TABLE IF EXISTS stops CASCADE;
-DROP TABLE IF EXISTS routes CASCADE;
-DROP TABLE IF EXISTS calendar CASCADE;
-DROP TABLE IF EXISTS calendar_dates CASCADE;
-DROP TABLE IF EXISTS agency CASCADE;
-DROP TABLE IF EXISTS feed_info CASCADE;
-DROP TABLE IF EXISTS shapes CASCADE;
-DROP TABLE IF EXISTS transfers CASCADE;
-DROP TABLE IF EXISTS predictions CASCADE;
-DROP TABLE IF EXISTS friends CASCADE;
-DROP TABLE IF EXISTS friend_requests CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
 
 
 
@@ -44,6 +30,15 @@ CREATE TABLE calendar (
     end_date INT
 );
 
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    nickname VARCHAR(80) UNIQUE NOT NULL,
+    email VARCHAR(120) UNIQUE NOT NULL,
+    password_hash VARCHAR(256) NOT NULL,
+    cumulative_score INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE trips (
     trip_id VARCHAR(255) NOT NULL,
     service_date DATE NOT NULL,
@@ -65,15 +60,6 @@ CREATE TABLE stop_times (
     stop_sequence INT,
     PRIMARY KEY (trip_id, service_date, stop_sequence),
     FOREIGN KEY (trip_id, service_date) REFERENCES trips(trip_id, service_date)
-);
-
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    nickname VARCHAR(80) UNIQUE NOT NULL,
-    email VARCHAR(120) UNIQUE NOT NULL,
-    password_hash VARCHAR(256) NOT NULL,
-    cumulative_score INTEGER DEFAULT 0,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE friend_requests (
