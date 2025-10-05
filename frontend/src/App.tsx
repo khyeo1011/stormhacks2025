@@ -12,6 +12,7 @@ import Account from './components/ui/Account';
 import Dashboard from './components/ui/Dashboard';
 import AddFriend from './components/ui/AddFriend';
 import FriendRequests from './components/ui/FriendRequests';
+import Leaderboard from './components/ui/Leaderboard';
 import './App.css';
 
 function App() {
@@ -47,6 +48,11 @@ function App() {
             <Route path="/dashboard" element={
               <main className="main-content">
                 <Dashboard />
+              </main>
+            } />
+            <Route path="/leaderboard" element={
+              <main className="main-content">
+                <Leaderboard />
               </main>
             } />
             <Route path="/add-friend" element={

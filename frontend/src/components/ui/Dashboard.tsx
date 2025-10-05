@@ -208,6 +208,7 @@ const Dashboard: React.FC = () => {
 
   const handleLogout = () => {
     logout();
+    window.location.href = '/login';
   };
 
   if (loading) {
@@ -281,7 +282,7 @@ const Dashboard: React.FC = () => {
             <div className="stat-icon">✅</div>
             <div className="stat-content">
               <div className="stat-value">{accuracy}%</div>
-              <div className="stat-label">Accuracy</div>
+              <div className="stat-label">On time-o-meter (we believe)</div>
             </div>
           </div>
           <div className="stat-card warning">

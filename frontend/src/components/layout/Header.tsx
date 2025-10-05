@@ -15,6 +15,7 @@ const Header: React.FC = () => {
   const handleLogout = () => {
     logout();
     setIsMenuOpen(false);
+    navigate('/login');
   };
 
   const handleNavClick = (sectionId: string) => {
@@ -45,6 +46,7 @@ const Header: React.FC = () => {
               <li><button onClick={() => handleNavClick('features')} className="nav-link">Features</button></li>
               <li><button onClick={() => handleNavClick('about')} className="nav-link">About</button></li>
               <li><button onClick={() => handleNavClick('contact')} className="nav-link">Contact</button></li>
+              <li><Link to="/leaderboard" className="nav-link">Leaderboard</Link></li>
             </ul>
           </nav>
 
@@ -89,9 +91,11 @@ const Header: React.FC = () => {
           <li><button onClick={() => handleNavClick('features')} className="mobile-nav-link">Features</button></li>
           <li><button onClick={() => handleNavClick('about')} className="mobile-nav-link">About</button></li>
           <li><button onClick={() => handleNavClick('contact')} className="mobile-nav-link">Contact</button></li>
+          <li><Link to="/leaderboard" className="mobile-nav-link" onClick={toggleMenu}>Leaderboard</Link></li>
           {isAuthenticated ? (
             <>
               <li><Link to="/dashboard" className="mobile-nav-link" onClick={toggleMenu}>Dashboard</Link></li>
+              <li><Link to="/leaderboard" className="mobile-nav-link" onClick={toggleMenu}>Leaderboard</Link></li>
               <li><Link to="/add-friend" className="mobile-nav-link" onClick={toggleMenu}>Add Friend</Link></li>
               <li><Link to="/friend-requests" className="mobile-nav-link" onClick={toggleMenu}>Requests</Link></li>
               <li><Link to="/account" className="mobile-nav-link" onClick={toggleMenu}>My Account</Link></li>

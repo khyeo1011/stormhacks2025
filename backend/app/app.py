@@ -52,8 +52,7 @@ def create_app():
     # Setup the Flask-JWT-Extended extension
     app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY', 'super-secret-fallback')
     # Optional: configure token expirations
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = int(os.environ.get('JWT_ACCESS_TOKEN_EXPIRES_SECONDS', 900))  # default 15 minutes
-    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = int(os.environ.get('JWT_REFRESH_TOKEN_EXPIRES_SECONDS', 2592000))  # default 30 days
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = int(os.environ.get('JWT_ACCESS_TOKEN_EXPIRES_SECONDS', 99999))  # default 99999 seconds
     jwt = JWTManager(app)
 
     @app.teardown_appcontext
