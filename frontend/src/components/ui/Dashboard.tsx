@@ -40,11 +40,23 @@ interface Prediction {
   created_at: string;
 }
 
+interface PredictionHistory {
+  id: number;
+  trip_id: string;
+  service_date: string;
+  predicted_outcome: string;
+  created_at: string;
+  actual_outcome: string | null;
+  trip_headsign: string | null;
+  prediction_result: 'correct' | 'incorrect' | null;
+}
+
 const Dashboard: React.FC = () => {
   const { token, logout } = useAuth();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [predictionHistory, setPredictionHistory] = useState<PredictionHistory[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -66,10 +78,11 @@ const Dashboard: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const [userResponse, tripsResponse, predictionsResponse, friendsResponse] = await Promise.all([
+      const [userResponse, tripsResponse, predictionsResponse, predictionHistoryResponse, friendsResponse] = await Promise.all([
         makeAuthenticatedRequest('http://localhost:8000/auth/profile'),
         fetch('http://localhost:8000/trips'),
         makeAuthenticatedRequest('http://localhost:8000/predictions'),
+        makeAuthenticatedRequest('http://localhost:8000/predictions/history'),
         makeAuthenticatedRequest('http://localhost:8000/auth/friends')
       ]);
 
@@ -105,10 +118,6 @@ const Dashboard: React.FC = () => {
         
         // Calculate stats from predictions data
         const totalPredictions = predictionsData.length;
-        const today = new Date().toISOString().split('T')[0];
-        const todayPredictions = predictionsData.filter((pred: any) => 
-          pred.created_at && pred.created_at.startsWith(today)
-        ).length;
         
         // Update user data with stats if available
         if (userData) {
@@ -117,6 +126,11 @@ const Dashboard: React.FC = () => {
             cumulativeScore: totalPredictions * 10 // Simple scoring: 10 points per prediction
           });
         }
+      }
+
+      if (predictionHistoryResponse.ok) {
+        const historyData = await predictionHistoryResponse.json();
+        setPredictionHistory(historyData);
       }
 
       if (friendsResponse.ok) {
@@ -426,6 +440,51 @@ const Dashboard: React.FC = () => {
                   </div>
                   <div className="prediction-date">
                     {new Date(prediction.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Prediction History */}
+        <div className="prediction-history">
+          <h2>Prediction History</h2>
+          {predictionHistory.length === 0 ? (
+            <div className="no-predictions">
+              <p>No predictions yet. Make your first prediction above!</p>
+            </div>
+          ) : (
+            <div className="history-list">
+              {predictionHistory.map(prediction => (
+                <div key={prediction.id} className="history-item">
+                  <div className="history-trip">
+                    <div className="trip-headsign">{prediction.trip_headsign || `Trip ${prediction.trip_id}`}</div>
+                    <div className="trip-date">{new Date(prediction.service_date).toLocaleDateString()}</div>
+                  </div>
+                  <div className="history-prediction">
+                    <div className="predicted">
+                      <span className="label">Predicted:</span>
+                      <span className={`outcome ${prediction.predicted_outcome}`}>
+                        {prediction.predicted_outcome === 'on_time' && '✅ On Time'}
+                        {prediction.predicted_outcome === 'late' && '⏰ Late'}
+                        {prediction.predicted_outcome === 'early' && '🕐 Early'}
+                      </span>
+                    </div>
+                    <div className="actual">
+                      <span className="label">Actual:</span>
+                      <span className={`outcome ${prediction.actual_outcome || 'pending'}`}>
+                        {prediction.actual_outcome === 'on_time' && '✅ On Time'}
+                        {prediction.actual_outcome === 'late' && '⏰ Late'}
+                        {prediction.actual_outcome === 'early' && '🕐 Early'}
+                        {!prediction.actual_outcome && '⏳ Pending'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={`history-result ${prediction.prediction_result || 'pending'}`}>
+                    {prediction.prediction_result === 'correct' && '✅ Correct'}
+                    {prediction.prediction_result === 'incorrect' && '❌ Incorrect'}
+                    {!prediction.prediction_result && '⏳ Pending'}
                   </div>
                 </div>
               ))}
