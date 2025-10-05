@@ -1,11 +1,11 @@
 
 import os
 from flask import Flask, jsonify, g, request
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 from flask_swagger_ui import get_swaggerui_blueprint
-import psycopg2
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
-from .auth.routes import  auth_bp
+from .auth.routes import auth_bp
 
 # URL for exposing Swagger UI (without trailing '/')
 SWAGGER_URL = '/api/docs'
@@ -20,18 +20,15 @@ blueprint = get_swaggerui_blueprint(
     },
 )
 
-def get_db_connection():
-    if 'db' not in g:
-        g.db = psycopg2.connect(
-            host=os.environ.get('POSTGRES_HOST'),
-            database=os.environ.get('POSTGRES_DB'),
-            user=os.environ.get('POSTGRES_USER'),
-            password=os.environ.get('POSTGRES_PASSWORD')
-        )
-    return g.db
+
+
 
 def create_app():
     app = Flask(__name__)
+
+    # Setup the Flask-JWT-Extended extension
+    app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY', 'super-secret-fallback') # Change this in production!
+    jwt = JWTManager(app)
 
     @app.teardown_appcontext
     def close_db(e=None):
@@ -43,7 +40,23 @@ def create_app():
     def hello():
         return "Hello from Flask!"
 
+    @app.route('/login', methods=['POST'])
+    def login():
+        email = request.json.get('email', None)
+        password = request.json.get('password', None)
 
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('SELECT id, password FROM users WHERE email = %s;', (email,))
+        user = cur.fetchone()
+        cur.close()
+
+        if user and check_password_hash(user[1], password):
+            user_id = user[0]
+            access_token = create_access_token(identity=user_id)
+            return jsonify(access_token=access_token)
+
+        return jsonify({"msg": "Bad email or password"}), 401
 
     # Minimal OpenAPI 3.0 spec so Swagger UI can render
     @app.get('/swagger.json')
@@ -75,9 +88,10 @@ def create_app():
                         }
                     }
                 },
-                "/users": {
+                "/auth/users": {
                     "get": {
                         "summary": "Get all users",
+                        "security": [{"bearerAuth": []}],
                         "responses": {
                             "200": {
                                 "description": "A list of users",
