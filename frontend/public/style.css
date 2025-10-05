@@ -100,16 +100,27 @@ ul a:hover {
   /* transition: width 2s, height 4s, background-color 3s; */
   text-decoration: underline;
 }
+@media screen and (max-width: 600px) {
+  .container {
+    height: 42em !important;
+    width: 30em !important;
+}
+  #start-button {
+    margin-left: 12em !important;
+    margin-top: 41em !important;
+  }
+}
 .container {
     margin: 50px auto;
     width: 46em;
     height: 32em;
-    padding: 20px;
+    padding: 2em;
     background: rgba(156, 42, 42, 0.618);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     display: block;
 }
+
 /* @keyframes fade{
     0% {opacity: 1; -webkit-background-clip: text;background-color: rgb(227, 134, 134)}
     100% {opacity: .5; -webkit-background-clip: text; background-color: rgb(227,134,134)}

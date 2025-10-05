@@ -60,6 +60,7 @@
         background-color: black;
         margin-left: 46em;
         margin-top: -14em;
+        max-width: 600px;
         border-radius: 2em;
       }
       #animated-csss{
@@ -70,18 +71,7 @@
         justify-content: center;
         padding: 50px;
     }
-      /* #fancybox {
-        margin: 50px auto;
-        height: 23em;
-        width: 34em;
-        padding: 20px;
-        background: rgba(156, 42, 42, 0.618);
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        display: block;
-        z-index: 1;
-        position: absolute;
-    } */
+
       #image{
         margin-left: 57em;
       }
@@ -141,6 +131,16 @@
       padding: 10px 20px;
       background-image: linear-gradient(90deg, rgba(255, 29, 29, 0.473), rgba(0, 0, 0, 0.473));
       color: white;
+    }
+    @media screen and (max-width: 600px) {
+      #fancybox {
+          margin-left: -1em !important;
+          margin-top: -15em !important;
+      }
+      #start-button {
+        margin-left: 12em !important;
+        margin-top: 41em !important;
+      }
     }
     </style>
     <!--
