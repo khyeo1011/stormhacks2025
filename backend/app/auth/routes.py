@@ -5,6 +5,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_tok
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import psycopg2
+from flask_cors import CORS, cross_origin
+
 
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -56,42 +58,44 @@ def get_users():
     return jsonify(users)
 
 
-@auth_bp.route('/register', methods=['POST'])
+@auth_bp.route('/register', methods=['POST', 'OPTIONS'])
+@cross_origin()
 def add_user():
-    data = request.get_json()
     
-    if not data:
-        return jsonify({'error': 'No data provided'}), 400
-    
-    email = data.get('email')
-    password = data.get('password')
-    nickname = data.get('nickname')
 
-    if not all([email, password, nickname]):
-        return jsonify({'error': 'Email, password, and nickname are required'}), 400
+    if request.method == 'POST':
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        email = data.get('email')
+        password = data.get('password')
+        nickname = data.get('nickname')
 
-    cumulativeScore = 0
-    hashed_password = generate_password_hash(password)
+        if not all([email, password, nickname]):
+            return jsonify({'error': 'Email, password, and nickname are required'}), 400
 
-    conn = get_db_connection()
-    cur = conn.cursor()
-    try:
-        cur.execute(
-            'INSERT INTO "users" ("email", "password", "nickname", "cumulativeScore") VALUES (%s, %s, %s, %s) RETURNING "id"',
-            (email, hashed_password, nickname, cumulativeScore)
-        )
-        user_id = cur.fetchone()[0]
-        conn.commit()
-        cur.close()
-        return jsonify({'id': user_id, 'message': 'User created successfully'}), 201
-    except psycopg2.IntegrityError:
-        conn.rollback()
-        cur.close()
-        return jsonify({'error': 'Email already exists'}), 409
-    except Exception:
-        conn.rollback()
-        cur.close()
-        return jsonify({'error': 'Internal server error'}), 500
+        cumulativeScore = 0
+        hashed_password = generate_password_hash(password)
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                'INSERT INTO "users" ("email", "password", "nickname", "cumulativeScore") VALUES (%s, %s, %s, %s) RETURNING "id"',
+                (email, hashed_password, nickname, cumulativeScore)
+            )
+            user_id = cur.fetchone()[0]
+            conn.commit()
+            cur.close()
+            return jsonify({'id': user_id, 'message': 'User created successfully'}), 201
+        except psycopg2.IntegrityError:
+            conn.rollback()
+            cur.close()
+            return jsonify({'error': 'Email already exists'}), 409
+        except Exception:
+            conn.rollback()
+            cur.close()
+            return jsonify({'error': 'Internal server error'}), 500
 
 
 

@@ -5,8 +5,8 @@
     "description": "API for a bus arrival prediction game.",
     "version": "1.0.0"
   },
-  "host": "localhost:5001",
-  "basePath": "/api",
+  "host": "localhost:8000",
+  "basePath": "/",
   "schemes": [
     "http"
   ],
@@ -255,11 +255,14 @@
     "User": {
       "type": "object",
       "properties": {
-        "username": {
+        "email": {
           "type": "string"
         },
         "password": {
           "type": "string"
+        },
+        "nickname": {
+            "type": "string"
         }
       }
     },

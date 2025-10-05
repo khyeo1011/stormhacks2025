@@ -48,6 +48,7 @@ const Register: React.FC = () => {
     try {
       const response = await fetch('http://localhost:8000/auth/register', {
         method: 'POST',
+        mode: "cors",
         headers: {
           'Content-Type': 'application/json',
         },
