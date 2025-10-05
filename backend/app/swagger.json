@@ -1,640 +1,315 @@
 {
-    "openapi": "3.0.3",
-    "info": {
-        "title": "Buss-in-it API",
-        "version": "1.0.0",
-        "description": "API for the Buss-in-it web game."
+  "swagger": "2.0",
+  "info": {
+    "title": "Stormhacks 2025 Prediction API",
+    "description": "API for a bus arrival prediction game.",
+    "version": "1.0.0"
+  },
+  "host": "localhost:5001",
+  "basePath": "/api",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "summary": "Register a new user",
+        "description": "Creates a new user account.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "User object that needs to be added",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User created successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
     },
-    "servers": [
-        {
-            "url": "http://localhost:8000"
-        }
-    ],
-    "components": {
-        "securitySchemes": {
-            "bearerAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT"
+    "/auth/login": {
+      "post": {
+        "summary": "Logs in a user",
+        "description": "Logs in a user and returns an access token.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "User credentials",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful login",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "access_token": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
         }
+      }
     },
-    "paths": {
-        "/": {
-            "get": {
-                "summary": "Hello endpoint",
-                "responses": {
-                    "200": {
-                        "description": "A friendly greeting",
-                        "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "type": "string"
-                                },
-                                "examples": {
-                                    "example": {
-                                        "value": "Hello from Flask!"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+    "/trips": {
+      "get": {
+        "summary": "Get all available trips",
+        "description": "Returns a list of all trips from the database that are available for predictions.",
+        "responses": {
+          "200": {
+            "description": "A list of trips",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Trip"
+              }
             }
-        },
-        "/auth/users": {
-            "get": {
-                "summary": "Get all users",
-                "responses": {
-                    "200": {
-                        "description": "A list of users",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "id": {
-                                                "type": "integer"
-                                            },
-                                            "email": {
-                                                "type": "string"
-                                            },
-                                            "nickname": {
-                                                "type": "string"
-                                            },
-                                            "cumulativeScore": {
-                                                "type": "integer"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/register": {
-            "post": {
-                "summary": "Create a new user",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "email": {
-                                        "type": "string"
-                                    },
-                                    "password": {
-                                        "type": "string"
-                                    },
-                                    "nickname": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "email",
-                                    "password"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "User created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "409": {
-                        "description": "Email already exists"
-                    }
-                }
-            }
-        },
-        "/auth/login": {
-            "post": {
-                "summary": "User login",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "email": {
-                                        "type": "string"
-                                    },
-                                    "password": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "email",
-                                    "password"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Login successful",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "accessToken": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Bad email or password"
-                    }
-                }
-            }
-        },
-        "/auth/friend-requests": {
-            "post": {
-                "summary": "Send a friend request",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "receiverId": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "required": [
-                                    "receiverId"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Friend request sent"
-                    },
-                    "400": {
-                        "description": "Bad request"
-                    },
-                    "409": {
-                        "description": "Friend request already sent or received or users are already friends"
-                    }
-                }
-            }
-        },
-        "/auth/friend-requests/pending": {
-            "get": {
-                "summary": "Get pending friend requests",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "A list of pending friend requests",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "senderId": {
-                                                "type": "integer"
-                                            },
-                                            "nickname": {
-                                                "type": "string"
-                                            },
-                                            "email": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/friend-requests/handle": {
-            "post": {
-                "summary": "Handle a friend request",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "senderId": {
-                                        "type": "integer"
-                                    },
-                                    "action": {
-                                        "type": "string",
-                                        "enum": [
-                                            "accept",
-                                            "reject"
-                                        ]
-                                    }
-                                },
-                                "required": [
-                                    "senderId",
-                                    "action"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Friend request handled"
-                    },
-                    "400": {
-                        "description": "Bad request"
-                    },
-                    "404": {
-                        "description": "Friend request not found"
-                    }
-                }
-            }
-        },
-        "/auth/friends": {
-            "get": {
-                "summary": "Get friends list",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "A list of friends",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "id": {
-                                                "type": "integer"
-                                            },
-                                            "nickname": {
-                                                "type": "string"
-                                            },
-                                            "email": {
-                                                "type": "string"
-                                            },
-                                            "cumulativeScore": {
-                                                "type": "integer"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/trips": {
-            "get": {
-                "summary": "Get all trips",
-                "responses": {
-                    "200": {
-                        "description": "A list of trips",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "id": {
-                                                "type": "integer"
-                                            },
-                                            "name": {
-                                                "type": "string"
-                                            },
-                                            "description": {
-                                                "type": "string"
-                                            },
-                                            "outcome": {
-                                                "type": "string"
-                                            },
-                                            "createdAt": {
-                                                "type": "string",
-                                                "format": "date-time"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "summary": "Create a new trip",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "tripId": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "required": [
-                                    "tripId"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Trip created"
-                    },
-                    "403": {
-                        "description": "Trip not from route 37807"
-                    },
-                    "404": {
-                        "description": "Trip not found in GTFS data"
-                    },
-                    "409": {
-                        "description": "Trip already exists"
-                    }
-                }
-            }
-        },
-        "/trips/{tripId}": {
-            "get": {
-                "summary": "Get a single trip",
-                "parameters": [
-                    {
-                        "name": "tripId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "A single trip",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "description": {
-                                            "type": "string"
-                                        },
-                                        "outcome": {
-                                            "type": "string"
-                                        },
-                                        "createdAt": {
-                                            "type": "string",
-                                            "format": "date-time"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Trip not found"
-                    }
-                }
-            }
-        },
-        "/trips/{tripId}/resolve": {
-            "post": {
-                "summary": "Resolve a trip",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "tripId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "outcome": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "outcome"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Trip resolved"
-                    }
-                }
-            }
-        },
-        "/predictions": {
-            "get": {
-                "summary": "Get user's predictions",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "A list of predictions",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "id": {
-                                                "type": "integer"
-                                            },
-                                            "tripId": {
-                                                "type": "integer"
-                                            },
-                                            "predictedOutcome": {
-                                                "type": "string"
-                                            },
-                                            "createdAt": {
-                                                "type": "string",
-                                                "format": "date-time"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "summary": "Cast a prediction",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "tripId": {
-                                        "type": "string"
-                                    },
-                                    "predictedOutcome": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "tripId",
-                                    "predictedOutcome"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Prediction created"
-                    },
-                    "409": {
-                        "description": "Prediction already exists"
-                    }
-                }
-            }
-        },
-        "/routes/{routeId}/trips": {
-            "get": {
-                "summary": "Get trips for a route",
-                "parameters": [
-                    {
-                        "name": "routeId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "A list of trips for the route",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "route_id": {
-                                            "type": "integer"
-                                        },
-                                        "route_name": {
-                                            "type": "string"
-                                        },
-                                        "trips": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "trip_id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "stop_times": {
-                                                        "type": "array",
-                                                        "items": {
-                                                            "type": "object"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Route not found"
-                    }
-                }
-            }
+          }
         }
+      }
+    },
+    "/trips/{trip_id}": {
+      "get": {
+        "summary": "Get a single trip",
+        "description": "Returns details for a single trip.",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trip details",
+            "schema": {
+              "$ref": "#/definitions/Trip"
+            }
+          },
+          "404": {
+            "description": "Trip not found"
+          }
+        }
+      }
+    },
+    "/trips/{trip_id}/resolve": {
+      "post": {
+        "summary": "Resolve a trip",
+        "description": "Sets the outcome of a trip. (Admin only)",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "outcome": {
+                  "type": "string",
+                  "example": "on-time"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trip resolved"
+          },
+          "400": {
+            "description": "Outcome is required"
+          }
+        }
+      }
+    },
+    "/trips/{trip_id}/score": {
+      "post": {
+        "summary": "Score a trip",
+        "description": "Calculates and awards points to users with correct predictions for a resolved trip. (Admin only)",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoring complete"
+          },
+          "400": {
+            "description": "Trip has not been resolved yet"
+          },
+          "404": {
+            "description": "Trip not found"
+          }
+        }
+      }
+    },
+    "/predictions": {
+      "get": {
+        "summary": "Get user's predictions",
+        "description": "Returns a list of predictions made by the current user.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of predictions",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Prediction"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a prediction",
+        "description": "Submits a prediction for a trip.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "tripId": {
+                  "type": "integer",
+                  "example": 12345
+                },
+                "predictedOutcome": {
+                  "type": "string",
+                  "example": "early"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Prediction created"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "403": {
+            "description": "Prediction for a trip that has already started"
+          },
+          "404": {
+            "description": "Trip not found"
+          },
+          "409": {
+            "description": "Prediction already exists for this trip"
+          }
+        }
+      }
     }
+  },
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "Trip": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "trip_id": {
+          "type": "string",
+          "description": "The name/identifier from the GTFS static data."
+        },
+        "description": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Prediction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "tripId": {
+          "type": "integer"
+        },
+        "predictedOutcome": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "JWT Authorization header using the Bearer scheme. Example: \\\"Authorization: Bearer {token}\\\""
+    }
+  }
 }

@@ -11,7 +11,7 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from .auth.routes import auth_bp
-from .trips import trips_bp
+from .trips import trips_bp, populate_trips_from_static_data
 from .predictions import predictions_bp
 from .routes_data import routes_data_bp
 from .auth.routes import get_db_connection
@@ -79,7 +79,9 @@ def create_app():
         return jsonify(leaderboard)
 
 
-
+    with app.app_context():
+        populate_trips_from_static_data()
+        
     @app.get('/swagger.json')
     def swagger_spec():
         with open('app/swagger.json', 'r') as f:

@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, jsonify, request, g
+from flask import Blueprint, jsonify, request, g, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import psycopg2
 import psycopg2.extras
@@ -8,6 +8,41 @@ import pandas as pd
 from .auth.routes import get_db_connection
 
 trips_bp = Blueprint('trips', __name__, url_prefix='/trips')
+
+def populate_trips_from_static_data():
+    """
+    Reads trips from static GTFS data and populates the database.
+    This function is intended to be run at application startup.
+    """
+    with current_app.app_context():
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            # Load the GTFS data
+            trips_df = pd.read_csv('static_data/trips.txt')
+            # Filter for the specific route
+            target_route_id = 37807
+            route_trips = trips_df[trips_df['route_id'] == target_route_id]
+
+            for index, row in route_trips.iterrows():
+                trip_id = row['trip_id']
+                # Check if trip already exists in the database
+                cur.execute('SELECT 1 FROM "trips" WHERE "name" = %s', (str(trip_id),))
+                if not cur.fetchone():
+                    cur.execute(
+                        'INSERT INTO "trips" ("name") VALUES (%s)',
+                        (str(trip_id),)
+                    )
+            conn.commit()
+            print(f"Successfully populated {len(route_trips)} trips for route {target_route_id}.")
+        except FileNotFoundError:
+            print("Error: GTFS data not found. Trips could not be populated.")
+        except Exception as e:
+            conn.rollback()
+            print(f"Error populating trips: {e}")
+        finally:
+            cur.close()
+
 
 def update_scores(trip_id, outcome):
     """Awards points to users who predicted correctly."""
@@ -27,68 +62,20 @@ def update_scores(trip_id, outcome):
         cur.close()
         raise e
 
-@trips_bp.route('', methods=['POST'])
-@jwt_required()
-def create_trip():
-    # This endpoint could be restricted to admins
-    data = request.get_json()
-    trip_id = data.get('tripId')
-
-    if not trip_id:
-        return jsonify({"error": "tripId is required"}), 400
-
-    try:
-        # Load the GTFS data
-        trips_df = pd.read_csv('static_data/trips.txt')
-        trips_df['route_id'] = pd.to_numeric(trips_df['route_id'], errors='coerce')
-        
-        # Find the trip
-        trip_info_row = trips_df[trips_df['trip_id'] == trip_id]
-        
-        if trip_info_row.empty:
-            return jsonify({"error": f"Trip with tripId {trip_id} not found in GTFS data"}), 404
-
-        trip_info = trip_info_row.iloc[0]
-
-        if trip_info['route_id'] != 37807:
-            return jsonify({"error": "Only trips from route 37807 are allowed"}), 403
-
-        conn = get_db_connection()
-        cur = conn.cursor()
-
-        # Check if trip already exists in the database
-        cur.execute('SELECT 1 FROM "trips" WHERE "name" = %s', (str(trip_id),))
-        if cur.fetchone():
-            return jsonify({"error": "Trip already exists"}), 409
-
-        cur.execute(
-            'INSERT INTO "trips" ("name") VALUES (%s) RETURNING "id"',
-            (str(trip_id),)
-        )
-        new_trip_id = cur.fetchone()[0]
-        conn.commit()
-        cur.close()
-        return jsonify({'id': new_trip_id, 'tripId': trip_id}), 201
-
-    except FileNotFoundError:
-        return jsonify({"error": "GTFS data not found"}), 500
-    except Exception as e:
-        # It's good to log the exception here
-        return jsonify({"error": str(e)}), 500
-
 @trips_bp.route('', methods=['GET'])
 def get_trips():
     conn = get_db_connection()
-    cur = conn.cursor(psycopg2.extras.DictCursor)
-    cur.execute('SELECT "id", "name", "description", "outcome", "createdAt" FROM "trips";')
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute('SELECT "id", "name" as "trip_id" FROM "trips";')
     trips = [dict(row) for row in cur.fetchall()]
     cur.close()
     return jsonify(trips)
 
+
 @trips_bp.route('/<int:trip_id>', methods=['GET'])
 def get_trip(trip_id):
     conn = get_db_connection()
-    cur = conn.cursor(psycopg2.extras.DictCursor)
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute('SELECT "id", "name", "description", "outcome", "createdAt" FROM "trips" WHERE "id" = %s;', (trip_id,))
     trip = cur.fetchone()
     cur.close()
@@ -123,7 +110,7 @@ def resolve_trip(trip_id):
 def score_trip(trip_id):
     # This endpoint could be restricted to admins
     conn = get_db_connection()
-    cur = conn.cursor(psycopg2.extras.DictCursor)
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute('SELECT "outcome" FROM "trips" WHERE "id" = %s', (trip_id,))
     trip = cur.fetchone()
     cur.close()
