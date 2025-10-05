@@ -42,6 +42,15 @@ def create_app():
     def hello():
         return "Hello from Flask!"
 
+    @app.route('/leaderboard', methods=['GET'])
+    def get_leaderboard():
+        conn = get_db_connection()
+        cur = conn.cursor() 
+        cur.execute('SELECT nickname, cumulativeScore FROM users ORDER BY cumulativeScore DESC LIMIT 10;')
+        leaderboard = cur.fetchall()
+        cur.close()
+        return jsonify(leaderboard)
+
 
     # Minimal OpenAPI 3.0 spec so Swagger UI can render
     @app.get('/swagger.json')
