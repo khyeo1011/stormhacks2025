@@ -42,6 +42,7 @@ def get_db_connection():
             password=os.environ.get('POSTGRES_PASSWORD')
         )
     return g.db
+
 @auth_bp.route('/users', methods=['GET'])
 def get_users():
     conn = get_db_connection()

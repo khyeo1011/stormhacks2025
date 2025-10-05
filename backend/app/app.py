@@ -23,8 +23,6 @@ blueprint = get_swaggerui_blueprint(
 )
 
 
-
-
 def create_app():
     app = Flask(__name__)
 
