@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { makeAuthenticatedRequest } from '../../utils/auth';
+import { API_ENDPOINTS } from '../../config/api';
 import './FriendRequests.css';
 
 interface FriendRequest {
@@ -25,7 +26,7 @@ const FriendRequests: React.FC = () => {
   const loadPendingRequests = async () => {
     try {
       setLoading(true);
-      const response = await makeAuthenticatedRequest('http://localhost:8000/auth/friend-requests/pending');
+      const response = await makeAuthenticatedRequest(API_ENDPOINTS.AUTH.FRIEND_REQUESTS_PENDING);
       if (response.ok) {
         const requests = await response.json();
         setPendingRequests(requests);
@@ -44,7 +45,7 @@ const FriendRequests: React.FC = () => {
       setError('');
       setSuccess('');
 
-      const response = await makeAuthenticatedRequest('http://localhost:8000/auth/friend-requests/handle', {
+      const response = await makeAuthenticatedRequest(API_ENDPOINTS.AUTH.FRIEND_REQUESTS_HANDLE, {
         method: 'POST',
         body: JSON.stringify({
           sender_id: senderId,

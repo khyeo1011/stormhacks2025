@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { makeAuthenticatedRequest } from '../../utils/auth';
+import { API_ENDPOINTS } from '../../config/api';
 import './Leaderboard.css';
 
 interface LeaderboardEntry {
@@ -18,7 +19,7 @@ const Leaderboard: React.FC = () => {
         setLoading(true);
         setError(null);
         // /leaderboard does not require auth on backend, but use helper for consistency
-        const response = await makeAuthenticatedRequest('http://localhost:8000/leaderboard');
+        const response = await makeAuthenticatedRequest(API_ENDPOINTS.LEADERBOARD);
         if (!response.ok) {
           throw new Error(`Failed to load leaderboard (${response.status})`);
         }

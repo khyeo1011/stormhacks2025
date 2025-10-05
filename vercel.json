@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "backend/app/app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/app/app.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/dist/$1"
+    }
+  ],
+  "env": {
+    "JWT_SECRET_KEY": "@jwt-secret-key",
+    "POSTGRES_HOST": "@postgres-host",
+    "POSTGRES_USER": "@postgres-user",
+    "POSTGRES_PASSWORD": "@postgres-password",
+    "POSTGRES_DB": "@postgres-db",
+    "FRONTEND_ORIGINS": "@frontend-origins"
+  }
+}

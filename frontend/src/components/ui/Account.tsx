@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { API_ENDPOINTS } from '../../config/api';
 import './Account.css';
 
 interface UserData {
@@ -24,7 +25,7 @@ const Account: React.FC = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await fetch('http://localhost:8000/auth/profile', {
+      const response = await fetch(API_ENDPOINTS.AUTH.PROFILE, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

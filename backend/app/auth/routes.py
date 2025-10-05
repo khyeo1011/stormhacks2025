@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import psycopg2
 from flask_cors import CORS, cross_origin
+from ..email_service import send_welcome_email
 
 
 
@@ -87,6 +88,14 @@ def add_user():
             user_id = cur.fetchone()[0]
             conn.commit()
             cur.close()
+            
+            # Send welcome email (non-blocking)
+            try:
+                send_welcome_email(email, nickname)
+            except Exception as e:
+                # Log error but don't fail registration
+                print(f"Failed to send welcome email: {e}")
+            
             return jsonify({'id': user_id, 'message': 'User created successfully'}), 201
         except psycopg2.IntegrityError:
             conn.rollback()
