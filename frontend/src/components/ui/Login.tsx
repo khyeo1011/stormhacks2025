@@ -42,7 +42,7 @@ const Login: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Use auth context to store token
+        // Use auth context to store tokens
         login(data.access_token);
         // Redirect to dashboard
         window.location.href = '/dashboard';

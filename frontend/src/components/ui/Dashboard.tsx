@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { makeAuthenticatedRequest } from '../../utils/auth';
 import './Dashboard.css';
@@ -48,9 +48,13 @@ const Dashboard: React.FC = () => {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [predictionOutcome, setPredictionOutcome] = useState('');
   const [makingPrediction, setMakingPrediction] = useState(false);
+  const predictionSectionRef = useRef<HTMLDivElement | null>(null);
+  const [currentTripsPage, setCurrentTripsPage] = useState(1);
+  const tripsPerPage = 10;
 
   useEffect(() => {
     if (token) {
@@ -58,14 +62,14 @@ const Dashboard: React.FC = () => {
     }
   }, [token]);
 
+
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const [userResponse, tripsResponse, predictionsResponse, statsResponse, friendsResponse] = await Promise.all([
+      const [userResponse, tripsResponse, predictionsResponse, friendsResponse] = await Promise.all([
         makeAuthenticatedRequest('http://localhost:8000/auth/profile'),
         fetch('http://localhost:8000/trips'),
-        makeAuthenticatedRequest('http://localhost:8000/simple-predictions'),
-        makeAuthenticatedRequest('http://localhost:8000/simple-predictions/stats'),
+        makeAuthenticatedRequest('http://localhost:8000/predictions'),
         makeAuthenticatedRequest('http://localhost:8000/auth/friends')
       ]);
 
@@ -89,7 +93,7 @@ const Dashboard: React.FC = () => {
             return false;
           }
         });
-        setTrips(availableTrips.slice(0, 20)); // Show first 20 available trips
+        setTrips(availableTrips);
       } else {
         console.error('Failed to load trips:', tripsResponse.status, tripsResponse.statusText);
         setError('Failed to load available trips');
@@ -98,15 +102,19 @@ const Dashboard: React.FC = () => {
       if (predictionsResponse.ok) {
         const predictionsData = await predictionsResponse.json();
         setPredictions(predictionsData);
-      }
-
-      if (statsResponse.ok) {
-        const statsData = await statsResponse.json();
+        
+        // Calculate stats from predictions data
+        const totalPredictions = predictionsData.length;
+        const today = new Date().toISOString().split('T')[0];
+        const todayPredictions = predictionsData.filter((pred: any) => 
+          pred.created_at && pred.created_at.startsWith(today)
+        ).length;
+        
         // Update user data with stats if available
         if (userData) {
           setUserData({
             ...userData,
-            cumulativeScore: statsData.total_predictions * 10 // Simple scoring: 10 points per prediction
+            cumulativeScore: totalPredictions * 10 // Simple scoring: 10 points per prediction
           });
         }
       }
@@ -124,9 +132,11 @@ const Dashboard: React.FC = () => {
 
   const handleMakePrediction = async () => {
     if (!selectedTrip || !predictionOutcome) return;
-
+    
     try {
       setMakingPrediction(true);
+      setError(''); // Clear any previous errors
+      
       const response = await makeAuthenticatedRequest('http://localhost:8000/predictions', {
         method: 'POST',
         body: JSON.stringify({
@@ -137,20 +147,64 @@ const Dashboard: React.FC = () => {
       });
 
       if (response.ok) {
-        await loadDashboardData(); // Reload data to show new prediction
+        // Just reload predictions instead of all dashboard data
+        try {
+          const predictionsResponse = await makeAuthenticatedRequest('http://localhost:8000/predictions');
+          if (predictionsResponse.ok) {
+            const predictionsData = await predictionsResponse.json();
+            setPredictions(predictionsData);
+          }
+        } catch (err) {
+          const message = err instanceof Error
+            ? err.message
+            : typeof err === 'string'
+            ? err
+            : 'Failed to reload predictions';
+          setError(message);
+          setTimeout(() => setError(''), 5000);
+        }
+        
         setSelectedTrip(null);
         setPredictionOutcome('');
-        setError('');
+        setSuccessMessage('Prediction submitted successfully!');
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccessMessage(''), 3000);
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Failed to make prediction');
+        let errorMessage = 'Failed to make prediction';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.msg || `Server error (${response.status})`;
+        } catch (parseError) {
+          errorMessage = `Server error (${response.status})`;
+        }
+        
+        setError(errorMessage);
+        // Clear error message after 5 seconds
+        setTimeout(() => setError(''), 5000);
       }
     } catch (err) {
       setError('Network error. Please try again.');
+      // Clear error message after 5 seconds
+      setTimeout(() => setError(''), 5000);
     } finally {
       setMakingPrediction(false);
     }
   };
+
+  const handleTripClick = (trip: Trip) => {
+    setSelectedTrip(trip);
+    setPredictionOutcome('');
+    if (predictionSectionRef.current) {
+      predictionSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const totalTripsPages = Math.max(1, Math.ceil(trips.length / tripsPerPage));
+  const startIndex = (currentTripsPage - 1) * tripsPerPage;
+  const endIndex = startIndex + tripsPerPage;
+  const paginatedTrips = trips.slice(startIndex, endIndex);
+  const goToPrevTripsPage = () => setCurrentTripsPage(prev => Math.max(1, prev - 1));
+  const goToNextTripsPage = () => setCurrentTripsPage(prev => Math.min(totalTripsPages, prev + 1));
 
   const handleLogout = () => {
     logout();
@@ -198,6 +252,13 @@ const Dashboard: React.FC = () => {
           {error}
         </div>
       )}
+
+      {successMessage && (
+        <div className="success-banner">
+          {successMessage}
+        </div>
+      )}
+
 
       <div className="dashboard-grid">
         {/* Stats Cards */}
@@ -282,7 +343,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Make Prediction Section */}
-        <div className="prediction-section">
+        <div className="prediction-section" ref={predictionSectionRef}>
           <h2>Make a Prediction</h2>
           <div className="prediction-form">
             <div className="form-group">
@@ -335,6 +396,12 @@ const Dashboard: React.FC = () => {
                 {makingPrediction ? 'Making Prediction...' : 'Submit Prediction'}
               </button>
             )}
+
+            {error && (
+              <div className="form-error">
+                {error}
+              </div>
+            )}
           </div>
         </div>
 
@@ -369,8 +436,21 @@ const Dashboard: React.FC = () => {
         <div className="available-trips">
           <h2>Available Trips</h2>
           <div className="trips-list">
-            {trips.slice(0, 10).map(trip => (
-              <div key={trip.trip_id} className="trip-item">
+            {paginatedTrips.map(trip => (
+              <div
+                key={trip.trip_id}
+                className={`trip-item ${selectedTrip?.trip_id === trip.trip_id ? 'selected' : ''}`}
+                onClick={() => handleTripClick(trip)}
+                role="button"
+                aria-label={`Select trip from ${trip.first_stop} to ${trip.last_stop} at ${trip.first_stop_arrival_time}`}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleTripClick(trip);
+                  }
+                }}
+              >
                 <div className="trip-route">
                   {trip.first_stop} → {trip.last_stop}
                 </div>
@@ -382,6 +462,25 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+          <div className="trips-pagination">
+            <button
+              className="page-btn"
+              onClick={goToPrevTripsPage}
+              disabled={currentTripsPage === 1}
+            >
+              ← Prev
+            </button>
+            <div className="page-info">
+              Page {currentTripsPage} of {totalTripsPages}
+            </div>
+            <button
+              className="page-btn"
+              onClick={goToNextTripsPage}
+              disabled={currentTripsPage === totalTripsPages}
+            >
+              Next →
+            </button>
           </div>
         </div>
       </div>

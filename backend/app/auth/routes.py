@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint
 from flask import jsonify, g, request
-from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
+from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token, create_refresh_token
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import psycopg2
@@ -116,6 +116,7 @@ def login():
         return jsonify(access_token=access_token)
 
     return jsonify({"msg": "Bad email or password"}), 401
+
 
 @auth_bp.route('/friend-requests', methods=['POST', 'OPTIONS'])
 @jwt_required()

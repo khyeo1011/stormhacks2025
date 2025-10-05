@@ -31,6 +31,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (savedToken) {
       setToken(savedToken);
     }
+    
   }, []);
 
   const login = (newToken: string) => {

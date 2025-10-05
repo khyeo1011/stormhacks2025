@@ -78,6 +78,9 @@
               "properties": {
                 "access_token": {
                   "type": "string"
+                },
+                "refresh_token": {
+                  "type": "string"
                 }
               }
             }
@@ -85,6 +88,43 @@
           "401": {
             "description": "Unauthorized"
           }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "summary": "Refresh access token",
+        "description": "Exchanges a valid refresh token for a new access token.",
+        "security": [
+          { "Bearer": [] }
+        ],
+        "responses": {
+          "200": {
+            "description": "New access token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "access_token": { "type": "string" }
+              }
+            }
+          },
+          "401": { "description": "Invalid refresh token" }
+        }
+      }
+    },
+    "/auth/profile": {
+      "get": {
+        "summary": "Get current user's profile",
+        "description": "Returns the authenticated user's profile.",
+        "security": [
+          { "Bearer": [] }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile",
+            "schema": { "$ref": "#/definitions/UserProfile" }
+          },
+          "404": { "description": "User not found" }
         }
       }
     },
