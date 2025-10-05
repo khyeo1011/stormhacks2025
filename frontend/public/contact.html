@@ -33,7 +33,7 @@
     <button onclick="return sign()" id="start-button">Contact</button>
     <img src="https://static.thenounproject.com/png/178831-200.png" alt="" id="image">
         <form id="forms" name="form" style="margin-top: -200px;align-items: center; text-align: center; padding-top: 20em;">
-            <div id="re" style="color: white; font-size: 1.5rem;">Contact us</div>
+            <div id="re" style="color: white; font-size: 1.5rem;">Login to Bus-in</div>
             <hr style="visibility: hidden;">
             <label style=" color: white; margin-left:-120px"id="un"for="username">Name:</label><br>
             <input minlength="6" style="border-radius: 20px; padding: 10px; border: 1px solid grey; outline: none;" value="" placeholder="Your Name" type="text" id="username" name="username" autocomplete="username"><br>
@@ -44,8 +44,8 @@
         </form>
         <div id="p" style="text-align: center; color:red; font-size: 1rem; display: none;">Please Enter your name</div>
         <hr style="visibility: hidden;">
-      <div id="fancybox"></div>
-      </body>
+        <div id="fancybox"></div>
+    </body>
     <style>
       body{
         background-image: linear-gradient(90deg, rgb(255, 255, 255), black);
@@ -62,6 +62,7 @@
         margin-top: -14em;
         max-width: 600px;
         border-radius: 2em;
+        transition: .5s ease;
       }
       #animated-csss{
         font-size: 2rem;
@@ -136,6 +137,7 @@
       #fancybox {
           margin-left: -1em !important;
           margin-top: -15em !important;
+          transition: margin 0.5s ease;
       }
       #start-button {
         margin-left: 12em !important;
@@ -183,7 +185,7 @@
 
         if (response.ok) {
           alert("User created successfully with ID: " + data.id);
-          window.location.replace("copied.html");
+          window.location.replace("home.html");
         } else {
           alert(data.error || "Error creating user");
         }

@@ -7,3 +7,5 @@ Pillow
 requests
 gtfs-realtime-bindings
 pandas
+SQLAlchemy
+Flask-APScheduler
