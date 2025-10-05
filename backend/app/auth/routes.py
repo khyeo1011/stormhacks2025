@@ -61,6 +61,8 @@ def get_users():
 @auth_bp.route('/register', methods=['POST', 'OPTIONS'])
 @cross_origin()
 def add_user():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
     
 
     if request.method == 'POST':

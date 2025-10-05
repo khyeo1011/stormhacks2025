@@ -21,7 +21,7 @@ def populate_trips_from_static_data():
     Reads trips from static GTFS data and populates the database.
     """
     import time
-    time.sleep(10) # wait for the db to be ready
+    time.sleep(5) # wait for the db to be ready
     conn = None
     try:
         conn = psycopg2.connect(
