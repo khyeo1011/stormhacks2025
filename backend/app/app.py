@@ -6,6 +6,8 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from .auth.routes import auth_bp
+from .auth.routes import get_db_connection
+
 
 # URL for exposing Swagger UI (without trailing '/')
 SWAGGER_URL = '/api/docs'
@@ -40,23 +42,6 @@ def create_app():
     def hello():
         return "Hello from Flask!"
 
-    @app.route('/login', methods=['POST'])
-    def login():
-        email = request.json.get('email', None)
-        password = request.json.get('password', None)
-
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute('SELECT id, password FROM users WHERE email = %s;', (email,))
-        user = cur.fetchone()
-        cur.close()
-
-        if user and check_password_hash(user[1], password):
-            user_id = user[0]
-            access_token = create_access_token(identity=user_id)
-            return jsonify(access_token=access_token)
-
-        return jsonify({"msg": "Bad email or password"}), 401
 
     # Minimal OpenAPI 3.0 spec so Swagger UI can render
     @app.get('/swagger.json')
