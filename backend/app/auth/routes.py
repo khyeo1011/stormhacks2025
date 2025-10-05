@@ -136,7 +136,7 @@ def send_friend_request():
         if cur.fetchone():
             return jsonify({"error": "Friend request already sent or received"}), 409
         
-        cur.execute('SELECT 1 FROM "friends" WHERE "user_id" = %s AND "friend_id" = %s', (senderId, receiverId))
+        cur.execute('SELECT 1 FROM "friends" WHERE "user_id1" = %s AND "user_id2" = %s', (senderId, receiverId))
         if cur.fetchone():
             return jsonify({"error": "Users are already friends"}), 409
 

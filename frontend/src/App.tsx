@@ -9,6 +9,9 @@ import Contact from './components/ui/Contact';
 import Register from './components/ui/Register';
 import Login from './components/ui/Login';
 import Account from './components/ui/Account';
+import Dashboard from './components/ui/Dashboard';
+import AddFriend from './components/ui/AddFriend';
+import FriendRequests from './components/ui/FriendRequests';
 import './App.css';
 
 function App() {
@@ -39,6 +42,21 @@ function App() {
             <Route path="/account" element={
               <main className="main-content">
                 <Account />
+              </main>
+            } />
+            <Route path="/dashboard" element={
+              <main className="main-content">
+                <Dashboard />
+              </main>
+            } />
+            <Route path="/add-friend" element={
+              <main className="main-content">
+                <AddFriend />
+              </main>
+            } />
+            <Route path="/friend-requests" element={
+              <main className="main-content">
+                <FriendRequests />
               </main>
             } />
           </Routes>

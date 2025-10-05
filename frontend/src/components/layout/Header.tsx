@@ -51,6 +51,15 @@ const Header: React.FC = () => {
           <div className="header-actions">
             {isAuthenticated ? (
               <>
+                <Link to="/dashboard">
+                  <button className="btn-primary">Dashboard</button>
+                </Link>
+                <Link to="/add-friend">
+                  <button className="btn-secondary">Add Friend</button>
+                </Link>
+                <Link to="/friend-requests">
+                  <button className="btn-secondary">Requests</button>
+                </Link>
                 <Link to="/account">
                   <button className="btn-secondary">My Account</button>
                 </Link>
@@ -88,6 +97,9 @@ const Header: React.FC = () => {
           <li><button onClick={() => handleNavClick('contact')} className="mobile-nav-link">Contact</button></li>
           {isAuthenticated ? (
             <>
+              <li><Link to="/dashboard" className="mobile-nav-link" onClick={toggleMenu}>Dashboard</Link></li>
+              <li><Link to="/add-friend" className="mobile-nav-link" onClick={toggleMenu}>Add Friend</Link></li>
+              <li><Link to="/friend-requests" className="mobile-nav-link" onClick={toggleMenu}>Requests</Link></li>
               <li><Link to="/account" className="mobile-nav-link" onClick={toggleMenu}>My Account</Link></li>
               <li><button className="mobile-nav-link" onClick={handleLogout}>Logout</button></li>
             </>
