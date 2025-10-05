@@ -3,6 +3,7 @@ from flask import Blueprint
 from flask import jsonify, g, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import psycopg2
 
 
@@ -54,10 +55,13 @@ def get_users():
 
 @auth_bp.route('/register', methods=['POST'])
 def add_user():
-    data = request.get_json()
+    data = request.form.to_dict()
+    # data = request.get_json()
     email = data['email']
     password = data['password']
     nickname = data.get('nickname')
+
+
     cumulativeScore = 0
 
     hashed_password = generate_password_hash(password)

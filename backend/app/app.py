@@ -166,8 +166,11 @@ def create_app():
         }
         return jsonify(spec)
 
-    app.register_blueprint(blueprint)
     app.register_blueprint(auth_bp)
+
+
+
+    app.register_blueprint(blueprint)
 
     return app
 
