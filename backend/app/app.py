@@ -1,13 +1,15 @@
-
 import os
 from flask import Flask, jsonify, g, request
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 from flask_swagger_ui import get_swaggerui_blueprint
+
+import psycopg2
+from flask_cors import CORS
+
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from .auth.routes import auth_bp
 from .auth.routes import get_db_connection
-
 
 # URL for exposing Swagger UI (without trailing '/')
 SWAGGER_URL = '/api/docs'
@@ -25,6 +27,28 @@ blueprint = get_swaggerui_blueprint(
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)
+
+    # Configure CORS for API endpoints and Swagger
+    origins_env = os.getenv("FRONTEND_ORIGINS") or os.getenv("FRONTEND_ORIGIN")
+    if origins_env:
+        origins = [o.strip() for o in origins_env.split(",") if o.strip()]
+    else:
+        origins = [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "https://localhost:3000",
+            "https://127.0.0.1:3000",
+        ]
+
+    CORS(
+        app,
+        resources={r"/*": {"origins": origins}},
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+        expose_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    )
 
     # Setup the Flask-JWT-Extended extension
     app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY', 'super-secret-fallback') # Change this in production!
