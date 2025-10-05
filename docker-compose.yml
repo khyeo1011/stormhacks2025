@@ -27,6 +27,25 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys;\ntry:\n  resp=urllib.request.urlopen('http://localhost:8000/swagger.json', timeout=2)\n  sys.exit(0 if resp.getcode()==200 else 1)\nexcept Exception:\n  sys.exit(1)\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  aimodel:
+    build:
+      context: ./AIModel
+      dockerfile: Dockerfile
+    environment:
+      - BACKEND_BASE_URL=http://backend:8000
+    volumes:
+      - ./AIModel:/app
+    depends_on:
+      backend:
+        condition: service_healthy
+    # Run daily via a simple loop (can be replaced with cron)
+    command: /bin/sh -c "while true; do python trainmodels.py; sleep 86400; done"
 
   db:
     image: postgres:13
