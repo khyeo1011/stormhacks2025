@@ -36,10 +36,9 @@ def create_app():
         origins = [o.strip() for o in origins_env.split(",") if o.strip()]
     else:
         origins = [
-            "http://localhost:3000",
-            "http://localhost:5173", 
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:5173"
+            "*",
+            "172.16.193.82:5173",
+            "http://172.16.193.82:5173"
         ]
 
     CORS(
